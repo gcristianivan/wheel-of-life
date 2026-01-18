@@ -63,7 +63,7 @@ class _SettingsViewState extends State<SettingsView> {
                   ),
                 ),
                 value: _biometricsEnabled,
-                activeThumbColor: AppTheme.accentColor,
+                activeColor: AppTheme.accentColor,
                 onChanged: (val) async {
                   await _auth.setBiometricEnabled(val);
                   setState(() {
