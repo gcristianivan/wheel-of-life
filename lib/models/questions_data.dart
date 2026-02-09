@@ -1,22 +1,22 @@
 import '../models/question.dart';
 
 final List<AssessmentQuestion> allQuestions = [
-  // Health
+  // --- HEALTH ---
   AssessmentQuestion(
     category: 'Health',
-    text: 'Do you get at least 7-8 hours of sleep regularly?',
+    text: 'Do you consistently get a good night\'s sleep?',
   ),
   AssessmentQuestion(
     category: 'Health',
-    text: 'Do you exercise for at least 30 minutes, 3 times a week?',
+    text: 'Do you exercise regularly every week?',
   ),
   AssessmentQuestion(
     category: 'Health',
-    text: 'Do you eat a balanced diet with plenty of vegetables?',
+    text: 'Do you eat a balanced diet?',
   ),
   AssessmentQuestion(
     category: 'Health',
-    text: 'Do you drink at least 2 liters of water daily?',
+    text: 'Do you stay well-hydrated throughout the day?',
   ),
   AssessmentQuestion(
     category: 'Health',
@@ -24,7 +24,7 @@ final List<AssessmentQuestion> allQuestions = [
   ),
   AssessmentQuestion(
     category: 'Health',
-    text: 'Do you have a regular medical check-up schedule?',
+    text: 'Do you attend routine medical check-ups regularly?',
   ),
   AssessmentQuestion(
     category: 'Health',
@@ -32,18 +32,18 @@ final List<AssessmentQuestion> allQuestions = [
   ),
   AssessmentQuestion(
     category: 'Health',
-    text: 'Do you limit your sugar and processed food intake?',
+    text: 'Do you limit your intake of junk food (excessive sugar, unhealthy fats, processed items)?',
   ),
   AssessmentQuestion(
     category: 'Health',
-    text: 'Do you avoid smoking or excessive alcohol consumption?',
+    text: 'Do you avoid unhealthy habits like smoking or excessive drinking?',
   ),
   AssessmentQuestion(
     category: 'Health',
     text: 'Are you satisfied with your current physical fitness level?',
   ),
 
-  // Career
+  // --- CAREER ---
   AssessmentQuestion(
     category: 'Career',
     text: 'Do you enjoy the work you do daily?',
@@ -85,7 +85,7 @@ final List<AssessmentQuestion> allQuestions = [
     text: 'Does your career align with your long-term goals?',
   ),
 
-  // Finances
+  // --- FINANCES ---
   AssessmentQuestion(
     category: 'Finances',
     text: 'Do you have a clear budget that you stick to?',
@@ -100,7 +100,7 @@ final List<AssessmentQuestion> allQuestions = [
   ),
   AssessmentQuestion(
     category: 'Finances',
-    text: 'Do you feel in control of your debt?',
+    text: 'Do you feel your debt level is manageable and under control?',
   ),
   AssessmentQuestion(
     category: 'Finances',
@@ -108,11 +108,11 @@ final List<AssessmentQuestion> allQuestions = [
   ),
   AssessmentQuestion(
     category: 'Finances',
-    text: 'Do you track your expenses regularly?',
+    text: 'Do your spending habits align with your personal values?',
   ),
   AssessmentQuestion(
     category: 'Finances',
-    text: 'Do you have multiple streams of income?',
+    text: 'Do you feel confident in your ability to generate income?',
   ),
   AssessmentQuestion(
     category: 'Finances',
@@ -120,17 +120,17 @@ final List<AssessmentQuestion> allQuestions = [
   ),
   AssessmentQuestion(
     category: 'Finances',
-    text: 'Do you have insurance (health, life, property) in place?',
+    text: 'Do you feel confident in your financial decision-making?',
   ),
   AssessmentQuestion(
     category: 'Finances',
     text: 'Do you feel financially secure?',
   ),
 
-  // Growth
+  // --- GROWTH ---
   AssessmentQuestion(
     category: 'Growth',
-    text: 'Do you read books or listen to educational content regularly?',
+    text: 'Are you actively prioritizing your ongoing education (books, courses, etc.)?',
   ),
   AssessmentQuestion(
     category: 'Growth',
@@ -142,15 +142,15 @@ final List<AssessmentQuestion> allQuestions = [
   ),
   AssessmentQuestion(
     category: 'Growth',
-    text: 'Have you learned a new skill in the last 6 months?',
+    text: 'Have you expanded your knowledge or abilities in the last 6 months?', //
   ),
   AssessmentQuestion(
     category: 'Growth',
-    text: 'Do you step out of your comfort zone mostly?',
+    text: 'Do you step out of your comfort zone regularly?',
   ),
   AssessmentQuestion(
     category: 'Growth',
-    text: 'Do you have a mentor or a role model you follow?',
+    text: 'Do you have sources of inspiration or guidance you look up to?',
   ),
   AssessmentQuestion(
     category: 'Growth',
@@ -162,14 +162,14 @@ final List<AssessmentQuestion> allQuestions = [
   ),
   AssessmentQuestion(
     category: 'Growth',
-    text: 'Do you attend workshops, seminars, or courses?',
+    text: 'Do you apply what you learn to your daily life?',
   ),
   AssessmentQuestion(
     category: 'Growth',
     text: 'Do you feel you are becoming a better person each year?',
   ),
 
-  // Romance
+  // --- ROMANCE ---
   AssessmentQuestion(
     category: 'Romance',
     text: 'Do you feel loved and appreciated by your partner?',
@@ -190,10 +190,13 @@ final List<AssessmentQuestion> allQuestions = [
     category: 'Romance',
     text: 'Do you share similar values and life goals?',
   ),
-  AssessmentQuestion(category: 'Romance', text: 'Do you have fun together?'),
   AssessmentQuestion(
     category: 'Romance',
-    text: 'Do you support each other\'s dreams and ambitions?',
+    text: 'Do you genuinely enjoy the time you spend together?',
+  ),
+  AssessmentQuestion(
+    category: 'Romance',
+    text: 'Do you feel supported in your personal aspirations?',
   ),
   AssessmentQuestion(
     category: 'Romance',
@@ -206,8 +209,9 @@ final List<AssessmentQuestion> allQuestions = [
   AssessmentQuestion(
     category: 'Romance',
     text: 'Are you happy with your relationship status?',
-  ), // Covers single/taken
-  // Social
+  ),
+
+  // --- SOCIAL ---
   AssessmentQuestion(
     category: 'Social',
     text: 'Do you have close friends you can rely on?',
@@ -226,15 +230,15 @@ final List<AssessmentQuestion> allQuestions = [
   ),
   AssessmentQuestion(
     category: 'Social',
-    text: 'Do you maintain contact with distant friends/family?',
+    text: 'Do you make an effort to stay connected with people who matter to you?',
   ),
   AssessmentQuestion(
     category: 'Social',
-    text: 'Do you avoid toxic relationships?',
+    text: 'Do you set healthy boundaries when your personal values or space are violated?',
   ),
   AssessmentQuestion(
     category: 'Social',
-    text: 'Are you a good listener in conversations?',
+    text: 'Are you able to remain present in your interactions?',
   ),
   AssessmentQuestion(
     category: 'Social',
@@ -242,14 +246,14 @@ final List<AssessmentQuestion> allQuestions = [
   ),
   AssessmentQuestion(
     category: 'Social',
-    text: 'Do you have a support system for tough times?',
+    text: 'Do you have someone to turn to during difficult times?',
   ),
   AssessmentQuestion(
     category: 'Social',
     text: 'Are you satisfied with your social life?',
   ),
 
-  // Fun
+  // --- FUN ---
   AssessmentQuestion(
     category: 'Fun',
     text: 'Do you engage in hobbies you enjoy weekly?',
@@ -258,34 +262,40 @@ final List<AssessmentQuestion> allQuestions = [
     category: 'Fun',
     text: 'Do you take vacations or breaks regularly?',
   ),
-  AssessmentQuestion(category: 'Fun', text: 'Do you laugh often?'),
+  AssessmentQuestion(
+    category: 'Fun',
+    text: 'Do you laugh often?',
+  ),
   AssessmentQuestion(
     category: 'Fun',
     text: 'Do you try new activities or adventures?',
   ),
   AssessmentQuestion(
     category: 'Fun',
-    text: 'Do you allow yourself to be playful and silly?',
+    text: 'Do you allow yourself to let go and be spontaneous?',
   ),
   AssessmentQuestion(
     category: 'Fun',
     text: 'Do you disconnect from work completely during free time?',
   ),
-  AssessmentQuestion(category: 'Fun', text: 'Do you have a creative outlet?'),
+  AssessmentQuestion(
+    category: 'Fun', 
+    text: 'Do you have a creative outlet?'
+  ),
   AssessmentQuestion(
     category: 'Fun',
     text: 'Do you prioritize leisure time without guilt?',
   ),
   AssessmentQuestion(
     category: 'Fun',
-    text: 'Do you do things just for the joy of it?',
+    text: 'Do you engage in activities solely for your own happiness?',
   ),
   AssessmentQuestion(
     category: 'Fun',
     text: 'Are you happy with the amount of fun in your life?',
   ),
 
-  // Environment
+  // --- ENVIRONMENT ---
   AssessmentQuestion(
     category: 'Environment',
     text: 'Is your home organized and clutter-free?',
@@ -300,7 +310,7 @@ final List<AssessmentQuestion> allQuestions = [
   ),
   AssessmentQuestion(
     category: 'Environment',
-    text: 'Is your workspace conducive to productivity?',
+    text: 'Is your living or working space conducive to your well-being?',
   ),
   AssessmentQuestion(
     category: 'Environment',
@@ -308,7 +318,7 @@ final List<AssessmentQuestion> allQuestions = [
   ),
   AssessmentQuestion(
     category: 'Environment',
-    text: 'Do you have access to nature nearby?',
+    text: 'Do you have a place where you can go to recharge (park, nature, quiet spot)?',
   ),
   AssessmentQuestion(
     category: 'Environment',
