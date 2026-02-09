@@ -18,22 +18,22 @@ class _OnboardingViewState extends State<OnboardingView> {
     {
       "title": "The Concept",
       "body":
-          "Life is complex. The Wheel of Life is a proven coaching tool that invites you to take a 'snapshot' of your existence, breaking it down into 8 core pillars to see how balanced you truly are.",
+          "Life is complex. We often get so caught up in the daily grind, chasing deadlines or running errands, that we lose sight of the big picture.\nThe Wheel of Life is a proven coaching tool that invites you to take a 'snapshot' of your existence. Instead of looking at your life as one big, overwhelming mix, we break it down into 8 core pillars. It helps you understand not just how you are doing, but how balanced you truly are.",
     },
     {
       "title": "The Metaphor",
       "body":
-          "Imagine your life is a wheel. If you score high in Career but low in Health, your wheel becomes jagged. Your goal isn't perfection, but to round out the wheel so your journey becomes smoother.",
+          "Imagine your life is a wheel. Each spoke represents an area like Health, Career, or Romance.\nIf you score high in Career but low in Health and Fun, your wheel becomes jagged and uneven. If you tried to drive a car with a wheel like that, the ride would be bumpy and uncomfortable. Your goal isn't necessarily to be perfect in every area, but to round out the wheel so your journey becomes smoother.",
     },
     {
-      "title": "How It Works",
+      "title": "How LifeWheel Helps",
       "body":
-          "1. Assess: Answer the 80 questions honestly.\n2. Visualize: See your shape and identify the 'dents'.\n3. Act: Focus your energy where it matters most.",
+          "'Wheel of Life' moves you from abstract guessing to visual clarity. Through a series of honest reflections, the app translates your current reality into a tangible shape. You won’t just feel your imbalances; you will see them. This immediate feedback highlights exactly where you are thriving and where you have 'dents,' turning a complex life into a clear, actionable roadmap.",
     },
     {
       "title": "The Goal",
       "body":
-          "A balanced wheel means identifying neglected areas. By improving your lowest scores, you often find that other areas of your life improve automatically.",
+          "A balanced wheel doesn't mean doing everything at once. It means identifying the neglected areas that are dragging you down. By improving your lowest scores, you often find that other areas of your life improve automatically.",
     },
   ];
 
