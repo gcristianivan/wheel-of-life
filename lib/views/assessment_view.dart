@@ -45,11 +45,7 @@ class _AssessmentBodyState extends State<_AssessmentBody> {
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          "Question Page",
-          style: AppTheme.heading2.copyWith(fontSize: 18),
-        ),
-        centerTitle: true,
+
       ),
       body: Container(
         decoration: const BoxDecoration(

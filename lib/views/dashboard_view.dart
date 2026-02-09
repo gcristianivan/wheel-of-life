@@ -1,12 +1,16 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../controllers/database_service.dart';
 import '../models/wheel_entry.dart';
+import '../models/action_item.dart';
+import '../controllers/action_item_service.dart';
 
 import 'assessment_view.dart';
 import 'history_view.dart';
 import 'settings_view.dart';
 import 'app_theme.dart';
+import 'pillar_detail_view.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -17,22 +21,33 @@ class DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<DashboardView> {
   WheelEntry? _latestEntry;
+  List<ActionItem> _activeGoals = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadLatestEntry();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    await Future.wait([
+      _loadLatestEntry(),
+      _loadActiveGoals(),
+    ]);
+    setState(() => _isLoading = false);
   }
 
   Future<void> _loadLatestEntry() async {
     final entries = await DatabaseService.instance.getEntries();
-    setState(() {
-      if (entries.isNotEmpty) {
-        _latestEntry = entries.first;
-      }
-      _isLoading = false;
-    });
+    if (entries.isNotEmpty) {
+      _latestEntry = entries.first;
+    }
+  }
+
+  Future<void> _loadActiveGoals() async {
+    _activeGoals = await ActionItemService.instance.getAllActiveActionItems();
   }
 
   @override
@@ -142,96 +157,285 @@ class _DashboardViewState extends State<DashboardView> {
         child: SafeArea(
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
-              : Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 24.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text("Dashboard", style: AppTheme.heading1),
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                    Expanded(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          // Concentric Guide Circles (Benchmarks)
-                          // Max radio is roughly 140 (20 + 10*12). let's visualize levels 3, 5, 8, 10.
-                          // Level X radius = 20 + (X * 12).
-                          // Level 10: 140
-                          // Level 7: 104
-                          // Level 5: 80
-                          // Level 3: 56
-                          for (final level in [3, 5, 8, 10])
-                            Container(
-                              width: (20.0 + (level * 12)) * 2,
-                              height: (20.0 + (level * 12)) * 2,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.1),
-                                  width: 1,
+              : SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+
+                      SizedBox(
+                        height: 400, // Fixed height for the chart area
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Concentric Guide Circles (Benchmarks)
+                            for (final level in [3, 5, 8, 10])
+                              Container(
+                                width: (20.0 + (level * 12)) * 2,
+                                height: (20.0 + (level * 12)) * 2,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.1),
+                                    width: 1,
+                                  ),
                                 ),
                               ),
-                            ),
 
-                          PieChart(
-                            PieChartData(
-                              sections: sections,
-                              centerSpaceRadius: 0,
-                              sectionsSpace: 2,
-                              startDegreeOffset: 270,
-                              pieTouchData: PieTouchData(enabled: false),
+                            PieChart(
+                              PieChartData(
+                                sections: sections,
+                                centerSpaceRadius: 0,
+                                sectionsSpace: 2,
+                                startDegreeOffset: 270,
+                                pieTouchData: PieTouchData(
+                                  touchCallback: (
+                                    FlTouchEvent event,
+                                    pieTouchResponse,
+                                  ) {
+                                    setState(() {
+                                      if (!event.isInterestedForInteractions ||
+                                          pieTouchResponse == null ||
+                                          pieTouchResponse.touchedSection == null) {
+                                        return;
+                                      }
+                                      if (event is FlTapUpEvent) {
+                                        final index =
+                                            pieTouchResponse
+                                                .touchedSection!
+                                                .touchedSectionIndex;
+                                        if (index >= 0 &&
+                                            index < categories.length) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (_) => PillarDetailView(
+                                                    category: categories[index],
+                                                    currentScore:
+                                                        _latestEntry!
+                                                                .scores[categories[index]] ??
+                                                            0,
+                                                    color: colors[index],
+                                                  ),
+                                            ),
+                                          ).then((_) => _loadData()); // Refresh on return
+                                        }
+                                      }
+                                    });
+                                  },
+                                ),
+                              ),
+                              swapAnimationDuration: const Duration(
+                                milliseconds: 800,
+                              ),
+                              swapAnimationCurve: Curves.elasticOut,
                             ),
-                            swapAnimationDuration: const Duration(
-                              milliseconds: 800,
-                            ),
-                            swapAnimationCurve: Curves.elasticOut,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 40),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.accentColor,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                      
+                      if (_activeGoals.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Active Goals",
+                              style: AppTheme.heading2.copyWith(fontSize: 20),
                             ),
-                            elevation: 8,
-                            shadowColor: AppTheme.accentColor.withOpacity(0.5),
                           ),
-                          onPressed: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const AssessmentView(),
+                        ),
+                        const SizedBox(height: 12),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: _activeGoals.length,
+                          itemBuilder: (context, index) {
+                            final item = _activeGoals[index];
+                            // Find color for category
+                            final catIndex = categories.indexOf(item.pillarCategory);
+                            final color = catIndex != -1 ? colors[catIndex] : Colors.white;
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: color.withOpacity(0.3)),
+                              ),
+                              child: ListTile(
+                                leading: Container(
+                                  width: 4,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                title: Text(
+                                  item.title,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  "${item.pillarCategory} • ${item.targetDate != null ? DateFormat('MMM d').format(item.targetDate!) : 'No deadline'}",
+                                  style: TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                trailing: Checkbox(
+                                  value: item.isCompleted,
+                                  activeColor: color,
+                                  checkColor: Colors.black,
+                                  side: BorderSide(color: color.withOpacity(0.5)),
+                                  onChanged: (val) async {
+                                     final updated = item.copyWith(isCompleted: val);
+                                     await ActionItemService.instance.updateActionItem(updated);
+                                     _loadData(); // Refresh list
+                                  },
+                                ),
+                                onTap: () => _showEditDialog(item),
                               ),
                             );
-                            _loadLatestEntry();
                           },
-                          child: const Text(
-                            "New Assessment",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                        ),
+                      ],
+
+                      const SizedBox(height: 40),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.accentColor,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 8,
+                              shadowColor: AppTheme.accentColor.withOpacity(0.5),
+                            ),
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const AssessmentView(),
+                                ),
+                              );
+                              _loadData();
+                            },
+                            child: const Text(
+                              "New Assessment",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 40),
-                  ],
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _showEditDialog(ActionItem item) async {
+    final titleController = TextEditingController(text: item.title);
+    DateTime? selectedDate = item.targetDate;
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF2E335A),
+            title: Text(
+              "Edit Goal",
+              style: AppTheme.heading2.copyWith(fontSize: 20),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    hintText: "What do you want to achieve?",
+                    hintStyle: TextStyle(color: Colors.white54),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white24),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppTheme.accentColor),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Text(
+                      selectedDate == null
+                          ? "No Deadline"
+                          : DateFormat('MMM d, yyyy').format(selectedDate!),
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate ?? DateTime.now(),
+                          firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                          lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                        );
+                        if (date != null) {
+                          setState(() {
+                            selectedDate = date;
+                          });
+                        }
+                      },
+                      child: const Text("Set Date"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.accentColor,
+                ),
+                onPressed: () async {
+                  if (titleController.text.trim().isNotEmpty) {
+                    final updatedItem = item.copyWith(
+                      title: titleController.text.trim(),
+                      targetDate: selectedDate,
+                    );
+                    await ActionItemService.instance.updateActionItem(updatedItem);
+                    if (mounted) Navigator.pop(context);
+                    _loadData();
+                  }
+                },
+                child: const Text("Save"),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

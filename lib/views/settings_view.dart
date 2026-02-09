@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../controllers/auth_controller.dart';
 import 'app_theme.dart';
+import 'onboarding_view.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -48,28 +49,53 @@ class _SettingsViewState extends State<SettingsView> {
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: AppTheme.glassCard(
-              child: SwitchListTile(
-                title: Text(
-                  "Biometric Lock",
-                  style: AppTheme.bodyText.copyWith(
-                    fontWeight: FontWeight.bold,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SwitchListTile(
+                    title: Text(
+                      "Biometric Lock",
+                      style: AppTheme.bodyText.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      "Require FaceID/Fingerprint to open app",
+                      style: AppTheme.bodyText.copyWith(
+                        fontSize: 12,
+                        color: Colors.white54,
+                      ),
+                    ),
+                    value: _biometricsEnabled,
+                    activeColor: AppTheme.accentColor,
+                    onChanged: (val) async {
+                      await _auth.setBiometricEnabled(val);
+                      setState(() {
+                         _biometricsEnabled = val;
+                      });
+                    },
                   ),
-                ),
-                subtitle: Text(
-                  "Require FaceID/Fingerprint to open app",
-                  style: AppTheme.bodyText.copyWith(
-                    fontSize: 12,
-                    color: Colors.white54,
+                  const Divider(color: Colors.white24),
+                  ListTile(
+                    leading: const Icon(Icons.info_outline, color: Colors.white70),
+                    title: Text(
+                      "About the Wheel of Life",
+                      style: AppTheme.bodyText.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios,
+                        size: 16, color: Colors.white54),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const OnboardingView(),
+                        ),
+                      );
+                    },
                   ),
-                ),
-                value: _biometricsEnabled,
-                activeColor: AppTheme.accentColor,
-                onChanged: (val) async {
-                  await _auth.setBiometricEnabled(val);
-                  setState(() {
-                    _biometricsEnabled = val;
-                  });
-                },
+                ],
               ),
             ),
           ),
