@@ -7,6 +7,17 @@ class AppTheme {
   static const Color glassWhite = Color(0x1FFFFFFF); // 12% opacity white
   static const Color accentColor = Color(0xFF6C63FF);
 
+  static const Map<String, Color> categoryColors = {
+    'Health': Color(0xFF69F0AE), // Green
+    'Career': Color(0xFF40C4FF), // Blue
+    'Finances': Color(0xFF7C4DFF), // Deep Purple
+    'Growth': Color(0xFFFF4081), // Pink
+    'Romance': Color(0xFFFF5252), // Red
+    'Social': Color(0xFFFFAB40), // Orange
+    'Fun': Color(0xFFFFD740), // Yellow
+    'Environment': Color(0xFF18FFFF), // Cyan
+  };
+
   static final TextStyle heading1 = GoogleFonts.outfit(
     fontSize: 32,
     fontWeight: FontWeight.bold,

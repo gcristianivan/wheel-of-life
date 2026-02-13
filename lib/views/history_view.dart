@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/wheel_entry.dart';
 import '../controllers/database_service.dart';
 import 'app_theme.dart';
+import 'settings_view.dart';
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
@@ -16,26 +17,9 @@ class _HistoryViewState extends State<HistoryView> {
   List<WheelEntry> _entries = [];
   bool _isLoading = true;
   String _selectedCategory = 'Average';
-  String _selectedTimeRange =
-      'All Time'; // 'All Time', 'This Year', 'This Month'
+  String _selectedTimeRange = 'All'; // 'Month', 'Quarter', 'Year', 'All'
 
-  final List<String> _categoryOptions = [
-    'Average',
-    'Health',
-    'Career',
-    'Finances',
-    'Growth',
-    'Romance',
-    'Social',
-    'Fun',
-    'Environment',
-  ];
-
-  final List<String> _timeRangeOptions = [
-    'All Time',
-    'This Year',
-    'This Month',
-  ];
+  final List<String> _timeRangeOptions = ['Month', 'Quarter', 'Year', 'All'];
 
   @override
   void initState() {
@@ -51,7 +35,6 @@ class _HistoryViewState extends State<HistoryView> {
     });
   }
 
-  // Helper to get value for a specific entry based on selected category
   double _getEntryValue(WheelEntry entry) {
     if (_selectedCategory == 'Average') {
       double total = 0;
@@ -65,41 +48,36 @@ class _HistoryViewState extends State<HistoryView> {
   List<FlSpot> _getChartData() {
     if (_entries.isEmpty) return [];
 
-    // 1. Filter by Time Range
     final now = DateTime.now();
     List<WheelEntry> filtered = _entries.where((e) {
-      if (_selectedTimeRange == 'This Month') {
+      if (_selectedTimeRange == 'Month') {
         return e.date.year == now.year && e.date.month == now.month;
-      } else if (_selectedTimeRange == 'This Year') {
+      } else if (_selectedTimeRange == 'Quarter') {
+        // Simple quarter check: within last 3 months
+        return e.date.isAfter(now.subtract(const Duration(days: 90)));
+      } else if (_selectedTimeRange == 'Year') {
         return e.date.year == now.year;
       }
-      return true; // All Time
+      return true; // All
     }).toList();
 
     if (filtered.isEmpty) return [];
 
-    // 2. Group by Day and pick latest
-    // Map: "YYYY-MM-DD" -> WheelEntry
     final Map<String, WheelEntry> dailyLatest = {};
-
     for (var entry in filtered) {
       final dateKey = DateFormat('yyyy-MM-dd').format(entry.date);
       if (!dailyLatest.containsKey(dateKey)) {
         dailyLatest[dateKey] = entry;
       } else {
-        // If existing is older than current, replace it
-        // Note: _entries are typically loaded DESC, but let's be safe
         if (entry.date.isAfter(dailyLatest[dateKey]!.date)) {
           dailyLatest[dateKey] = entry;
         }
       }
     }
 
-    // Convert to list and sort ASC by date for chart
     final sortedDaily = dailyLatest.values.toList()
       ..sort((a, b) => a.date.compareTo(b.date));
 
-    // 3. Convert to Spots (X = milliseconds since epoch, Y = value)
     return sortedDaily.map((e) {
       return FlSpot(
         e.date.millisecondsSinceEpoch.toDouble(),
@@ -108,293 +86,426 @@ class _HistoryViewState extends State<HistoryView> {
     }).toList();
   }
 
+  Color _getCategoryColor() {
+    if (_selectedCategory == 'Average') {
+      return AppTheme.accentColor;
+    }
+    return AppTheme.categoryColors[_selectedCategory] ?? AppTheme.accentColor;
+  }
+
   @override
   Widget build(BuildContext context) {
     final spots = _getChartData();
+    final currentColor = _getCategoryColor();
+
+    // Calculate Average Score for display
+    double averageScore = 0;
+    if (spots.isNotEmpty) {
+      averageScore = spots.map((e) => e.y).reduce((a, b) => a + b) / spots.length;
+    }
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text("Evolution", style: AppTheme.heading2),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.bottomLeft,
-            end: Alignment.topRight,
-            colors: [Color(0xFF1C1B33), Color(0xFF2E335A)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF2E335A), Color(0xFF1C1B33)],
           ),
         ),
         child: SafeArea(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      // Filters Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView(
+                        padding: const EdgeInsets.only(bottom: 100), // Space for nav if needed
                         children: [
-                          // Category Filter
-                          _buildDropdown(_selectedCategory, _categoryOptions, (
-                            val,
-                          ) {
-                            if (val != null)
-                              setState(() => _selectedCategory = val);
-                          }),
-                          const SizedBox(width: 12),
-                          // Time Range Filter
-                          _buildDropdown(
-                            _selectedTimeRange,
-                            _timeRangeOptions,
-                            (val) {
-                              if (val != null)
-                                setState(() => _selectedTimeRange = val);
-                            },
-                          ),
+                          const SizedBox(height: 20),
+                          _buildTimeFilter(),
+                          const SizedBox(height: 20),
+                          _buildChartSection(spots, currentColor, averageScore),
+                          const SizedBox(height: 30),
+                          _buildCategoryFilter(),
+                          const SizedBox(height: 20),
+                          if (_entries.isNotEmpty)
+                             _buildHistoryList(),
                         ],
                       ),
-
-                      SizedBox(
-                        height: 250,
-                        child: spots.isEmpty
-                            ? Center(
-                                child: Text(
-                                  "No data for selected period",
-                                  style: AppTheme.bodyText,
-                                ),
-                              )
-                            : Padding(
-                                padding: const EdgeInsets.only(
-                                  right: 16.0,
-                                  top: 24.0,
-                                ),
-                                child: LineChart(
-                                  LineChartData(
-                                    gridData: FlGridData(show: false),
-                                    titlesData: FlTitlesData(
-                                      bottomTitles: AxisTitles(
-                                        sideTitles: SideTitles(
-                                          showTitles: true,
-                                          getTitlesWidget: (val, meta) {
-                                            final date =
-                                                DateTime.fromMillisecondsSinceEpoch(
-                                                  val.toInt(),
-                                                );
-                                            if (val == meta.min ||
-                                                val == meta.max) {
-                                              // Show edge dates
-                                              return Padding(
-                                                padding: const EdgeInsets.only(
-                                                  top: 8,
-                                                ),
-                                                child: Text(
-                                                  DateFormat(
-                                                    'MMM d',
-                                                  ).format(date),
-                                                  style: const TextStyle(
-                                                    color: Colors.white54,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                            return const SizedBox();
-                                          },
-                                          reservedSize: 30,
-                                          interval:
-                                              86400000 *
-                                              5, // rough interval, doesn't matter much if we handle logic above or just show start/end
-                                        ),
-                                      ),
-                                      leftTitles: AxisTitles(
-                                        sideTitles: SideTitles(
-                                          showTitles: true,
-                                          getTitlesWidget: (val, meta) => Text(
-                                            val.toInt().toString(),
-                                            style: const TextStyle(
-                                              color: Colors.white54,
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                          interval: 2,
-                                          reservedSize: 20,
-                                        ),
-                                      ),
-                                      topTitles: AxisTitles(
-                                        sideTitles: SideTitles(
-                                          showTitles: false,
-                                        ),
-                                      ),
-                                      rightTitles: AxisTitles(
-                                        sideTitles: SideTitles(
-                                          showTitles: false,
-                                        ),
-                                      ),
-                                    ),
-                                    borderData: FlBorderData(show: false),
-                                    lineBarsData: [
-                                      LineChartBarData(
-                                        spots: spots,
-                                        isCurved: true,
-                                        color: AppTheme.accentColor,
-                                        barWidth: 3,
-                                        isStrokeCapRound: true,
-                                        dotData: FlDotData(show: true),
-                                        belowBarData: BarAreaData(
-                                          show: true,
-                                          color: AppTheme.accentColor
-                                              .withOpacity(0.2),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        "$_selectedCategory Trend ($_selectedTimeRange)",
-                        style: AppTheme.bodyText.copyWith(
-                          color: Colors.white54,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // List of ALL entries for context, respecting visual filter filters?
-                      // User said "indicate if multiple assessments taken" (implicitly handled by list showing all, chart showing latest).
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: _entries.length,
-                          itemBuilder: (context, index) {
-                            final entry = _entries[index];
-
-                            // Apply filters to list as well? Usually yes.
-                            final now = DateTime.now();
-                            if (_selectedTimeRange == 'This Month' &&
-                                (entry.date.year != now.year ||
-                                    entry.date.month != now.month)) {
-                              return const SizedBox();
-                            }
-                            if (_selectedTimeRange == 'This Year' &&
-                                entry.date.year != now.year) {
-                              return const SizedBox();
-                            }
-
-                            final value = _getEntryValue(
-                              entry,
-                            ).toStringAsFixed(1);
-
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12.0),
-                              child: AppTheme.glassCard(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          DateFormat(
-                                            'MMM d, yyyy',
-                                          ).format(entry.date),
-                                          style: AppTheme.bodyText.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Text(
-                                          DateFormat(
-                                            'h:mm a',
-                                          ).format(entry.date),
-                                          style: AppTheme.bodyText.copyWith(
-                                            fontSize: 12,
-                                            color: Colors.white54,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.accentColor.withOpacity(
-                                          0.2,
-                                        ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: AppTheme.accentColor
-                                              .withOpacity(0.5),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        value,
-                                        style: AppTheme.heading2.copyWith(
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDropdown(
-    String currentVal,
-    List<String> items,
-    ValueChanged<String?> onChanged,
-  ) {
-    return Theme(
-      data: Theme.of(context).copyWith(canvasColor: const Color(0xFF2E335A)),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-        decoration: BoxDecoration(
-          color: Colors.white10,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white24),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: currentVal,
-            icon: const Icon(
-              Icons.arrow_drop_down,
-              color: Colors.white,
-              size: 20,
-            ),
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-            onChanged: onChanged,
-            items: items.map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(value: value, child: Text(value));
-            }).toList(),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded( // Expanded to prevent overflow
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Evolution", style: AppTheme.heading1),
+                Text("Track your progress", style: AppTheme.bodyText),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.settings, color: Colors.white),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsView()),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeFilter() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24.0),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Row(
+        children: _timeRangeOptions.map((range) {
+          final isSelected = _selectedTimeRange == range;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedTimeRange = range),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppTheme.accentColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: AppTheme.accentColor.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          )
+                        ]
+                      : [],
+                ),
+                child: Text(
+                  range,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.white54,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildChartSection(List<FlSpot> spots, Color color, double avgScore) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text("Score Trend", style: AppTheme.heading2.copyWith(fontSize: 20)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withOpacity(0.05)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: color.withOpacity(0.6),
+                            blurRadius: 8,
+                          )
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "Avg. Score ${avgScore.toStringAsFixed(1)}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          height: 250,
+          width: double.infinity,
+          child: spots.isEmpty
+              ? Center(child: Text("No data available", style: AppTheme.bodyText))
+              : Padding(
+                  padding: const EdgeInsets.only(right: 24.0, left: 12.0),
+                  child: LineChart(
+                    LineChartData(
+                      gridData: FlGridData(
+                        show: true,
+                        drawVerticalLine: false,
+                        horizontalInterval: 2,
+                        getDrawingHorizontalLine: (value) {
+                          return FlLine(
+                            color: Colors.white.withOpacity(0.05),
+                            strokeWidth: 1,
+                            dashArray: [5, 5],
+                          );
+                        },
+                      ),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 30,
+                            getTitlesWidget: (value, meta) {
+                                // Show rough dates based on position
+                                if (value == meta.min || value == meta.max) {
+                                    final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                                    return Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Text(
+                                        DateFormat('MM/dd').format(date),
+                                        style: const TextStyle(color: Colors.white38, fontSize: 10),
+                                      ),
+                                    );
+                                }
+                                return const SizedBox();
+                            },
+                          ),
+                        ),
+                        leftTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)
+                        ),
+                        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      minY: 0,
+                      maxY: 10, // Assuming scores are 0-10
+                      lineBarsData: [
+                        LineChartBarData(
+                          spots: spots,
+                          isCurved: true,
+                          color: color,
+                          barWidth: 4,
+                          isStrokeCapRound: true,
+                          dotData: FlDotData(
+                            show: true,
+                            getDotPainter: (spot, percent, barData, index) {
+                              return FlDotCirclePainter(
+                                radius: 4,
+                                color: const Color(0xFF2E335A),
+                                strokeWidth: 3,
+                                strokeColor: color,
+                              );
+                            },
+                          ),
+                          belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                              colors: [
+                                color.withOpacity(0.3),
+                                color.withOpacity(0.0),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                      ],
+                      lineTouchData: LineTouchData(
+                          touchTooltipData: LineTouchTooltipData(
+                              getTooltipColor: (_) => const Color(0xFF2E335A).withOpacity(0.9),
+                              tooltipBorder: const BorderSide(color: Colors.white10),
+                              getTooltipItems: (touchedSpots) {
+                                  return touchedSpots.map((spot) {
+                                      final date = DateTime.fromMillisecondsSinceEpoch(spot.x.toInt());
+                                      return LineTooltipItem(
+                                          '${DateFormat('MMM d').format(date)}\n',
+                                          const TextStyle(color: Colors.white70, fontSize: 12),
+                                          children: [
+                                              TextSpan(
+                                                  text: spot.y.toStringAsFixed(1),
+                                                  style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14),
+                                              )
+                                          ]
+                                      );
+                                  }).toList();
+                              }
+                          )
+                      )
+                    ),
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryFilter() {
+    final categories = ['Average', ...AppTheme.categoryColors.keys];
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 24.0, bottom: 16.0),
+          child: Text(
+            "FILTER BY CATEGORY",
+            style: const TextStyle(
+              color: Colors.white54,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Row(
+            children: categories.map((cat) {
+              final isSelected = _selectedCategory == cat;
+              final color = cat == 'Average' 
+                  ? AppTheme.accentColor 
+                  : (AppTheme.categoryColors[cat] ?? Colors.white);
+              
+              return Padding(
+                padding: const EdgeInsets.only(right: 12.0),
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedCategory = cat),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: isSelected
+                        ? BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: color.withOpacity(0.4),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              )
+                            ],
+                          )
+                        : AppTheme.glassDecoration.copyWith(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                    child: Text(
+                      cat,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.white70,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildHistoryList() {
+      return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                   Text(
+                        "HISTORY",
+                        style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                        ),
+                    ),
+                    const SizedBox(height: 16),
+                    ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _entries.length,
+                        itemBuilder: (context, index) {
+                             final entry = _entries[index];
+                             final val = _getEntryValue(entry);
+                             return Padding(
+                                 padding: const EdgeInsets.only(bottom: 12),
+                                 child: AppTheme.glassCard(
+                                     child: Row(
+                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                         children: [
+                                             Column(
+                                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                                 children: [
+                                                     Text(DateFormat('MMM d, yyyy').format(entry.date), style: AppTheme.bodyText.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+                                                     Text(DateFormat('h:mm a').format(entry.date), style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                                                 ],
+                                             ),
+                                             Container(
+                                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                 decoration: BoxDecoration(
+                                                     color: _getCategoryColor().withOpacity(0.1),
+                                                     borderRadius: BorderRadius.circular(8),
+                                                     border: Border.all(color: _getCategoryColor().withOpacity(0.3))
+                                                 ),
+                                                 child: Text(val.toStringAsFixed(1), style: TextStyle(color: _getCategoryColor(), fontWeight: FontWeight.bold)),
+                                             )
+                                         ],
+                                     )
+                                 ),
+                             );
+                        },
+                    )
+              ],
+          ),
+      );
+  }
 }
+

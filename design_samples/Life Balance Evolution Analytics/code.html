@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Life Balance Growth Evolution</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#6C63FF",
+                        "background-start": "#2E335A",
+                        "background-end": "#1C1B33",
+                        "glass-border": "rgba(255, 255, 255, 0.08)",
+                        "glass-bg": "rgba(108, 99, 255, 0.1)",
+                    },
+                    fontFamily: {
+                        "display": ["Outfit", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>.glass-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }.chart-line-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 0;
+            animation: drawLine 2s ease-out forwards;
+        }
+        @keyframes drawLine {
+            from { stroke-dashoffset: 1000; }
+            to { stroke-dashoffset: 0; }
+        }
+        .chart-gradient {
+            fill: url(#gradient);
+            opacity: 0.2;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background-end font-display text-white min-h-screen antialiased overflow-hidden selection:bg-primary selection:text-white">
+<div class="max-w-md mx-auto h-screen relative flex flex-col bg-gradient-to-b from-[#2E335A] to-[#1C1B33] shadow-2xl overflow-hidden">
+<header class="pt-12 px-6 pb-6 flex justify-between items-center z-10">
+<div>
+<h1 class="text-3xl font-bold tracking-tight text-white">Evolution</h1>
+<p class="text-sm text-gray-400 font-medium mt-1">Track your progress</p>
+</div>
+<button class="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
+<span class="material-icons-round text-white text-xl">settings</span>
+</button>
+</header>
+<main class="flex-1 overflow-y-auto no-scrollbar pb-24 relative z-0">
+<div class="px-6 mb-8">
+<div class="bg-black/20 backdrop-blur-md p-1 rounded-2xl flex relative border border-white/5">
+<div class="absolute left-1 top-1 bottom-1 w-[24%] bg-primary rounded-xl shadow-lg shadow-primary/30 transition-all duration-300"></div>
+<button class="flex-1 text-center py-2.5 text-sm font-semibold text-white relative z-10 transition-colors">Month</button>
+<button class="flex-1 text-center py-2.5 text-sm font-medium text-gray-400 hover:text-white relative z-10 transition-colors">Quarter</button>
+<button class="flex-1 text-center py-2.5 text-sm font-medium text-gray-400 hover:text-white relative z-10 transition-colors">Year</button>
+<button class="flex-1 text-center py-2.5 text-sm font-medium text-gray-400 hover:text-white relative z-10 transition-colors">All</button>
+</div>
+</div>
+<div class="mb-10 relative mt-4">
+<div class="px-6 flex justify-between items-end mb-6">
+<h3 class="text-xl font-bold text-white">Score Trend</h3>
+<div class="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl border border-white/5 backdrop-blur-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-[#FF4C9F] shadow-[0_0_8px_rgba(255,76,159,0.6)]"></span>
+<span class="text-sm text-white font-medium">Avg. Score 7.8</span>
+</div>
+</div>
+<div class="w-full h-72 relative">
+<div class="absolute inset-0 px-6 flex flex-col justify-between pointer-events-none">
+<div class="w-full h-px bg-white/5 border-t border-dashed border-white/10"></div>
+<div class="w-full h-px bg-white/5 border-t border-dashed border-white/10"></div>
+<div class="w-full h-px bg-white/5 border-t border-dashed border-white/10"></div>
+<div class="w-full h-px bg-white/5 border-t border-dashed border-white/10"></div>
+<div class="w-full h-px bg-white/5 border-t border-dashed border-white/10"></div>
+</div>
+<svg class="w-full h-full overflow-visible" viewbox="0 0 375 220">
+<defs>
+<lineargradient id="gradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#FF4C9F" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#FF4C9F" stop-opacity="0"></stop>
+</lineargradient>
+<filter height="140%" id="glow" width="140%" x="-20%" y="-20%">
+<fegaussianblur result="coloredBlur" stddeviation="3"></fegaussianblur>
+<femerge>
+<femergenode in="coloredBlur"></femergenode>
+<femergenode in="SourceGraphic"></femergenode>
+</femerge>
+</filter>
+</defs>
+<path class="chart-gradient" d="M0,220 L0,140 C40,130 80,160 120,150 C160,140 200,100 240,110 C280,120 320,80 375,70 L375,220 Z"></path>
+<path class="chart-line-path" d="M-10,140 C40,130 80,160 120,150 C160,140 200,100 240,110 C280,120 320,80 385,70" fill="none" filter="url(#glow)" stroke="#FF4C9F" stroke-linecap="round" stroke-width="4"></path>
+<circle cx="120" cy="150" fill="#2E335A" r="5" stroke="#FF4C9F" stroke-width="3"></circle>
+<circle cx="240" cy="110" fill="#2E335A" r="5" stroke="#FF4C9F" stroke-width="3"></circle>
+<g>
+<circle class="animate-pulse shadow-[0_0_15px_rgba(255,76,159,0.8)]" cx="320" cy="85" fill="#FF4C9F" r="7"></circle>
+<circle cx="320" cy="85" fill="none" r="14" stroke="#FF4C9F" stroke-opacity="0.3" stroke-width="2"></circle>
+</g>
+</svg>
+<div class="absolute bottom-0 left-0 right-0 px-6 flex justify-between text-[11px] text-gray-400 font-medium uppercase tracking-wider transform translate-y-8">
+<span>Week 1</span>
+<span>Week 2</span>
+<span>Week 3</span>
+<span>Week 4</span>
+</div>
+</div>
+</div>
+<div class="mt-12 pl-6">
+<h4 class="text-sm font-semibold text-gray-300 mb-4 uppercase tracking-wider">Filter by Category</h4>
+<div class="flex gap-3 overflow-x-auto no-scrollbar pr-6 pb-4">
+<button class="bg-primary text-white font-bold px-6 py-3 rounded-2xl text-sm whitespace-nowrap shadow-lg shadow-primary/30">
+                        All
+                    </button>
+<button class="glass-card hover:bg-white/10 text-gray-200 px-5 py-3 rounded-2xl text-sm whitespace-nowrap transition-all border border-white/10">
+                        Health
+                    </button>
+<button class="glass-card hover:bg-white/10 text-gray-200 px-5 py-3 rounded-2xl text-sm whitespace-nowrap transition-all border border-white/10">
+                        Career
+                    </button>
+<button class="glass-card hover:bg-white/10 text-gray-200 px-5 py-3 rounded-2xl text-sm whitespace-nowrap transition-all border border-white/10">
+                        Finance
+                    </button>
+<button class="glass-card hover:bg-white/10 text-gray-200 px-5 py-3 rounded-2xl text-sm whitespace-nowrap transition-all border border-white/10">
+                        Relationships
+                    </button>
+</div>
+</div>
+</main>
+<nav class="absolute bottom-0 w-full bg-[#1C1B33]/90 backdrop-blur-xl border-t border-white/5 px-6 py-6 flex justify-between items-center z-20 pb-8">
+<button class="flex flex-col items-center gap-1 opacity-50 hover:opacity-100 transition-opacity">
+<span class="material-icons-round text-2xl">home</span>
+</button>
+<button class="flex flex-col items-center gap-1 opacity-50 hover:opacity-100 transition-opacity">
+<span class="material-icons-round text-2xl">pie_chart</span>
+</button>
+<button class="flex flex-col items-center gap-1 relative">
+<div class="absolute -top-12 bg-primary rounded-full p-4 shadow-lg shadow-primary/40 border-4 border-[#1C1B33] transform -translate-y-2">
+<span class="material-icons-round text-white text-2xl font-bold">add</span>
+</div>
+<span class="text-[10px] font-bold text-primary opacity-0">Add</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-icons-round text-2xl">insights</span>
+<span class="w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_8px_rgba(108,99,255,0.8)]"></span>
+</button>
+<button class="flex flex-col items-center gap-1 opacity-50 hover:opacity-100 transition-opacity">
+<span class="material-icons-round text-2xl">person</span>
+</button>
+</nav>
+</div>
+</body></html>

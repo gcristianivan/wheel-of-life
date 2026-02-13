@@ -18,7 +18,7 @@ class _OnboardingViewState extends State<OnboardingView> {
     {
       "title": "The Concept",
       "body":
-          "Life is complex. We often get so caught up in the daily grind, chasing deadlines or running errands, that we lose sight of the big picture.\nThe Wheel of Life is a proven coaching tool that invites you to take a 'snapshot' of your existence. Instead of looking at your life as one big, overwhelming mix, we break it down into 8 core pillars. It helps you understand not just how you are doing, but how balanced you truly are.",
+          "Life is complex. We often get so caught up in the daily grind, chasing deadlines or running errands, that we lose sight of the big picture.\nThe 'Wheel of Life' provides you with a proven coaching tool that invites you to take a 'snapshot' of your existence. Instead of looking at your life as one big, overwhelming mix, we break it down into 8 core pillars. It helps you understand not just how you are doing, but how balanced you truly are.",
     },
     {
       "title": "The Metaphor",
@@ -28,7 +28,7 @@ class _OnboardingViewState extends State<OnboardingView> {
     {
       "title": "How LifeWheel Helps",
       "body":
-          "'Wheel of Life' moves you from abstract guessing to visual clarity. Through a series of honest reflections, the app translates your current reality into a tangible shape. You won’t just feel your imbalances; you will see them. This immediate feedback highlights exactly where you are thriving and where you have 'dents,' turning a complex life into a clear, actionable roadmap.",
+          "'Wheel of Life' moves you from abstract guessing to visual clarity. Through a series of honest reflections, the app translates your current reality into a tangible shape. You won’t just feel your imbalances; you will see them. This immediate feedback highlights exactly where you are thriving and where you have 'dents', turning a complex life into a clear, actionable roadmap.",
     },
     {
       "title": "The Goal",

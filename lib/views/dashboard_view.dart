@@ -53,26 +53,8 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
     // Define categories and their fixed colors for the "Wheel" look
-    final categories = [
-      'Health',
-      'Career',
-      'Finances',
-      'Growth',
-      'Romance',
-      'Social',
-      'Fun',
-      'Environment',
-    ];
-    final colors = [
-      const Color(0xFF69F0AE), // Health - Green
-      const Color(0xFF40C4FF), // Career - Blue
-      const Color(0xFF7C4DFF), // Finances - Deep Purple
-      const Color(0xFFFF4081), // Growth - Pink
-      const Color(0xFFFF5252), // Romance - Red
-      const Color(0xFFFFAB40), // Social - Orange
-      const Color(0xFFFFD740), // Fun - Yellow
-      const Color(0xFF18FFFF), // Environment - Cyan
-    ];
+    // Define categories
+    final categories = AppTheme.categoryColors.keys.toList();
 
     List<PieChartSectionData> sections = [];
 
@@ -93,7 +75,7 @@ class _DashboardViewState extends State<DashboardView> {
 
         sections.add(
           PieChartSectionData(
-            color: colors[i].withOpacity(0.8),
+            color: (AppTheme.categoryColors[category] ?? Colors.white).withOpacity(0.8),
             value: 1, // Equal width slices
             title: score > 0 ? score.toString() : '',
             radius: radius,
@@ -104,7 +86,7 @@ class _DashboardViewState extends State<DashboardView> {
             ),
             titlePositionPercentageOffset: 0.8,
             showTitle: false,
-            badgeWidget: _Badge(category, score, colors[i]),
+            badgeWidget: _Badge(category, score, AppTheme.categoryColors[category] ?? Colors.white),
             badgePositionPercentageOffset: offset,
           ),
         );
@@ -114,7 +96,7 @@ class _DashboardViewState extends State<DashboardView> {
       for (int i = 0; i < categories.length; i++) {
         sections.add(
           PieChartSectionData(
-            color: colors[i].withOpacity(0.2),
+            color: (AppTheme.categoryColors[categories[i]] ?? Colors.white).withOpacity(0.2),
             value: 1,
             radius: 100,
             showTitle: false,
@@ -215,7 +197,8 @@ class _DashboardViewState extends State<DashboardView> {
                                                         _latestEntry!
                                                                 .scores[categories[index]] ??
                                                             0,
-                                                    color: colors[index],
+
+                                                    color: AppTheme.categoryColors[categories[index]] ?? Colors.white,
                                                   ),
                                             ),
                                           ).then((_) => _loadData()); // Refresh on return
@@ -255,8 +238,7 @@ class _DashboardViewState extends State<DashboardView> {
                           itemBuilder: (context, index) {
                             final item = _activeGoals[index];
                             // Find color for category
-                            final catIndex = categories.indexOf(item.pillarCategory);
-                            final color = catIndex != -1 ? colors[catIndex] : Colors.white;
+                            final color = AppTheme.categoryColors[item.pillarCategory] ?? Colors.white;
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 8),
