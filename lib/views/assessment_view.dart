@@ -23,9 +23,6 @@ class _AssessmentBody extends StatefulWidget {
 }
 
 class _AssessmentBodyState extends State<_AssessmentBody> {
-  // Can use PageController if we want slide animations, but standard state rebuild is snappier for "flashcard" feel
-  // requested in image.
-
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<AssessmentController>();
@@ -36,113 +33,32 @@ class _AssessmentBodyState extends State<_AssessmentBody> {
       });
     }
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+    // Get current category color or default to accent
+    final categoryColor =
+        AppTheme.categoryColors[controller.currentCategory] ??
+        AppTheme.accentColor;
 
-      ),
+    return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [Color(0xFF2E335A), Color(0xFF1C1B33)],
           ),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: const EdgeInsets.all(24.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 20),
-                // Category Header row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      controller.currentCategory,
-                      style: AppTheme.heading2.copyWith(
-                        color: AppTheme.accentColor,
-                        fontSize: 20,
-                      ),
-                    ),
-                    Text(
-                      "${controller.currentQuestionInCategory}/10",
-                      style: AppTheme.bodyText.copyWith(
-                        color: Colors.white70,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                // Progress Bar
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: controller.currentQuestionInCategory / 10.0,
-                    minHeight: 6,
-                    backgroundColor: Colors.white10,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppTheme.accentColor,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 40),
-
-                // Card
+                _buildHeader(context, controller, categoryColor),
+                const SizedBox(height: 32),
                 Expanded(
-                  child: Stack(
-                    children: [
-                      AppTheme.glassCard(
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 40,
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                controller.currentQuestion.text,
-                                style: AppTheme.heading1.copyWith(
-                                  fontSize: 24,
-                                  height: 1.3,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 60),
-                              _OptionButton(
-                                text: "YES",
-                                color: const Color(
-                                  0xFF66BB6A,
-                                ).withOpacity(0.8), // Green
-                                onTap: () => controller.answer(true),
-                              ),
-                              const SizedBox(height: 16),
-                              _OptionButton(
-                                text: "NO",
-                                color: const Color(
-                                  0xFFEF5350,
-                                ).withOpacity(0.8), // Red
-                                onTap: () => controller.answer(false),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  child: _buildQuestionCard(controller, categoryColor),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 32),
+                _buildFooter(controller),
               ],
             ),
           ),
@@ -150,46 +66,259 @@ class _AssessmentBodyState extends State<_AssessmentBody> {
       ),
     );
   }
+
+  Widget _buildHeader(
+    BuildContext context,
+    AssessmentController controller,
+    Color categoryColor,
+  ) {
+    // Calculate progress as percentage string (e.g., "30%")
+    final progressPercent = (controller.categoryProgress * 100).toInt();
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back, color: Colors.white70),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shape: const CircleBorder(),
+              ),
+            ),
+            Row(
+              children: [
+                Icon(
+                  AppTheme.getCategoryIcon(controller.currentCategory),
+                  color: categoryColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  controller.currentCategory.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.close, color: Colors.white70),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shape: const CircleBorder(),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Step ${controller.currentQuestionInCategory} of ${controller.questionsPerCategory}",
+              style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(
+              "$progressPercent%",
+              style: TextStyle(
+                color: categoryColor,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: controller.categoryProgress,
+            backgroundColor: Colors.white10,
+            valueColor: AlwaysStoppedAnimation<Color>(categoryColor),
+            minHeight: 6,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuestionCard(
+    AssessmentController controller,
+    Color categoryColor,
+  ) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Background glow/shadow layers
+        Positioned(
+          top: 20,
+          left: 20,
+          right: 20,
+          bottom: 0,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+        ),
+        AppTheme.glassCard(
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    AppTheme.getCategoryIcon(controller.currentCategory),
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  controller.currentQuestion.text,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Optional description text if available in future
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFooter(AssessmentController controller) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _OptionButton(
+                text: "NO",
+                isYes: false,
+                onTap: () => controller.answer(false),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _OptionButton(
+                text: "YES",
+                isYes: true,
+                onTap: () => controller.answer(true),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 class _OptionButton extends StatelessWidget {
   final String text;
-  final Color color;
+  final bool isYes;
   final VoidCallback onTap;
 
   const _OptionButton({
     required this.text,
-    required this.color,
+    required this.isYes,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final color = isYes ? AppTheme.successColor : AppTheme.errorColor;
+    
+    // YES button styling (Filled)
+    if (isYes) {
+      return GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 64,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.1),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                text,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // NO button styling (Outlined/Darker)
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity,
-        height: 56,
-        alignment: Alignment.center,
+        height: 64,
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(30), // Pill shape
-          border: Border.all(color: Colors.white24),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.3)),
         ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.0,
+        child: Center(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+            ),
           ),
         ),
       ),

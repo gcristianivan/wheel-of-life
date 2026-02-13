@@ -6,6 +6,8 @@ class AppTheme {
   static const Color background = Color(0xFF202028); // Dark background
   static const Color glassWhite = Color(0x1FFFFFFF); // 12% opacity white
   static const Color accentColor = Color(0xFF6C63FF);
+  static const Color successColor = Color(0xFF66BB6A);
+  static const Color errorColor = Color(0xFFEF5350);
 
   static const Map<String, Color> categoryColors = {
     'Health': Color(0xFF69F0AE), // Green
@@ -17,6 +19,29 @@ class AppTheme {
     'Fun': Color(0xFFFFD740), // Yellow
     'Environment': Color(0xFF18FFFF), // Cyan
   };
+
+  static IconData getCategoryIcon(String category) {
+    switch (category) {
+      case 'Health':
+        return Icons.fitness_center;
+      case 'Career':
+        return Icons.work;
+      case 'Finances':
+        return Icons.attach_money;
+      case 'Growth':
+        return Icons.trending_up;
+      case 'Romance':
+        return Icons.favorite_border;
+      case 'Social':
+        return Icons.people;
+      case 'Fun':
+        return Icons.celebration;
+      case 'Environment':
+        return Icons.home;
+      default:
+        return Icons.category;
+    }
+  }
 
   static final TextStyle heading1 = GoogleFonts.outfit(
     fontSize: 32,

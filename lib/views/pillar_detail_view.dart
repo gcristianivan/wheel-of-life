@@ -152,6 +152,10 @@ class _PillarDetailViewState extends State<PillarDetailView> {
       appBar: AppBar(
         backgroundColor: widget.color.withOpacity(0.2),
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(widget.category, style: AppTheme.heading2),
       ),
       floatingActionButton: FloatingActionButton(

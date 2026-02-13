@@ -149,14 +149,21 @@ class _HistoryViewState extends State<HistoryView> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded( // Expanded to prevent overflow
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Evolution", style: AppTheme.heading1),
-                Text("Track your progress", style: AppTheme.bodyText),
-              ],
-            ),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Evolution", style: AppTheme.heading1),
+                  Text("Track your progress", style: AppTheme.bodyText),
+                ],
+              ),
+            ],
           ),
           Container(
             decoration: BoxDecoration(

@@ -35,6 +35,10 @@ class _SettingsViewState extends State<SettingsView> {
         title: Text("Settings", style: AppTheme.heading2),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
