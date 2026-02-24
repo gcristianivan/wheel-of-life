@@ -24,25 +24,37 @@ class DatabaseService {
   Future<List<WheelEntry>> getEntries() async {
     final box = await _getBox();
     final List<WheelEntry> entries = [];
-    
+
     // box.values is an iterable of dynamic (the maps)
     for (var i = 0; i < box.length; i++) {
-        // hive stores keys separate from values.
-        // We might want to store the ID? 
-        // For 'add', key is an int.
-        final key = box.keyAt(i);
-        final value = box.getAt(i);
-        
-        if (value is Map) {
-            final entryMap = Map<String, dynamic>.from(value);
-            // Inject ID if needed, though WheelEntry.fromMap takes 'id'
-            entryMap['id'] = key; 
-            entries.add(WheelEntry.fromMap(entryMap));
-        }
+      // hive stores keys separate from values.
+      // We might want to store the ID?
+      // For 'add', key is an int.
+      final key = box.keyAt(i);
+      final value = box.getAt(i);
+
+      if (value is Map) {
+        final entryMap = Map<String, dynamic>.from(value);
+        // Inject ID if needed, though WheelEntry.fromMap takes 'id'
+        entryMap['id'] = key;
+        entries.add(WheelEntry.fromMap(entryMap));
+      }
     }
 
     // Sort by date DESC
     entries.sort((a, b) => b.date.compareTo(a.date));
     return entries;
+  }
+
+  Future<void> clearData() async {
+    final box = await _getBox();
+    await box.clear();
+  }
+
+  Future<void> insertEntries(List<WheelEntry> entries) async {
+    final box = await _getBox();
+    for (var entry in entries) {
+      await box.add(entry.toMap());
+    }
   }
 }

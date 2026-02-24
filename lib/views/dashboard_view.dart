@@ -7,13 +7,14 @@ import '../models/action_item.dart';
 import '../controllers/action_item_service.dart';
 
 import 'assessment_view.dart';
-import 'history_view.dart';
 import 'settings_view.dart';
 import 'app_theme.dart';
 import 'pillar_detail_view.dart';
 
 class DashboardView extends StatefulWidget {
-  const DashboardView({super.key});
+  final VoidCallback? onNavigateToGoals;
+
+  const DashboardView({super.key, this.onNavigateToGoals});
 
   @override
   State<DashboardView> createState() => _DashboardViewState();
@@ -43,6 +44,8 @@ class _DashboardViewState extends State<DashboardView> {
     final entries = await DatabaseService.instance.getEntries();
     if (entries.isNotEmpty) {
       _latestEntry = entries.first;
+    } else {
+      _latestEntry = null;
     }
   }
 
@@ -62,8 +65,7 @@ class _DashboardViewState extends State<DashboardView> {
       for (int i = 0; i < categories.length; i++) {
         final category = categories[i];
         final score = _latestEntry!.scores[category] ?? 0;
-        final radius =
-            20.0 +
+        final radius = 20.0 +
             (score *
                 12); // Base radius + score multiplier to create "Polar" effect.
         // Max radius ~= 20 + 120 = 140.
@@ -75,7 +77,8 @@ class _DashboardViewState extends State<DashboardView> {
 
         sections.add(
           PieChartSectionData(
-            color: (AppTheme.categoryColors[category] ?? Colors.white).withOpacity(0.8),
+            color: (AppTheme.categoryColors[category] ?? Colors.white)
+                .withOpacity(0.8),
             value: 1, // Equal width slices
             title: score > 0 ? score.toString() : '',
             radius: radius,
@@ -86,7 +89,8 @@ class _DashboardViewState extends State<DashboardView> {
             ),
             titlePositionPercentageOffset: 0.8,
             showTitle: false,
-            badgeWidget: _Badge(category, score, AppTheme.categoryColors[category] ?? Colors.white),
+            badgeWidget: _Badge(category, score,
+                AppTheme.categoryColors[category] ?? Colors.white),
             badgePositionPercentageOffset: offset,
           ),
         );
@@ -96,7 +100,8 @@ class _DashboardViewState extends State<DashboardView> {
       for (int i = 0; i < categories.length; i++) {
         sections.add(
           PieChartSectionData(
-            color: (AppTheme.categoryColors[categories[i]] ?? Colors.white).withOpacity(0.2),
+            color: (AppTheme.categoryColors[categories[i]] ?? Colors.white)
+                .withOpacity(0.2),
             value: 1,
             radius: 100,
             showTitle: false,
@@ -113,22 +118,20 @@ class _DashboardViewState extends State<DashboardView> {
         title: Text('Wheel of Life', style: AppTheme.heading2),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history, color: Colors.white),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const HistoryView()),
-            ),
-          ),
-          IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SettingsView()),
-            ),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsView()),
+              );
+              if (mounted) _loadData();
+            },
           ),
         ],
       ),
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -143,7 +146,6 @@ class _DashboardViewState extends State<DashboardView> {
                   child: Column(
                     children: [
                       const SizedBox(height: 20),
-
                       SizedBox(
                         height: 400, // Fixed height for the chart area
                         child: Stack(
@@ -177,31 +179,32 @@ class _DashboardViewState extends State<DashboardView> {
                                     setState(() {
                                       if (!event.isInterestedForInteractions ||
                                           pieTouchResponse == null ||
-                                          pieTouchResponse.touchedSection == null) {
+                                          pieTouchResponse.touchedSection ==
+                                              null) {
                                         return;
                                       }
                                       if (event is FlTapUpEvent) {
-                                        final index =
-                                            pieTouchResponse
-                                                .touchedSection!
-                                                .touchedSectionIndex;
+                                        final index = pieTouchResponse
+                                            .touchedSection!
+                                            .touchedSectionIndex;
                                         if (index >= 0 &&
                                             index < categories.length) {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder:
-                                                  (_) => PillarDetailView(
-                                                    category: categories[index],
-                                                    currentScore:
-                                                        _latestEntry!
-                                                                .scores[categories[index]] ??
-                                                            0,
-
-                                                    color: AppTheme.categoryColors[categories[index]] ?? Colors.white,
-                                                  ),
+                                              builder: (_) => PillarDetailView(
+                                                category: categories[index],
+                                                currentScore: _latestEntry!
+                                                            .scores[
+                                                        categories[index]] ??
+                                                    0,
+                                                color: AppTheme.categoryColors[
+                                                        categories[index]] ??
+                                                    Colors.white,
+                                              ),
                                             ),
-                                          ).then((_) => _loadData()); // Refresh on return
+                                          ).then((_) =>
+                                              _loadData()); // Refresh on return
                                         }
                                       }
                                     });
@@ -216,7 +219,43 @@ class _DashboardViewState extends State<DashboardView> {
                           ],
                         ),
                       ),
-                      
+                      const SizedBox(height: 32),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.accentColor,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 8,
+                              shadowColor:
+                                  AppTheme.accentColor.withOpacity(0.5),
+                            ),
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const AssessmentView(),
+                                ),
+                              );
+                              _loadData();
+                            },
+                            child: const Text(
+                              "New Assessment",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       if (_activeGoals.isNotEmpty) ...[
                         const SizedBox(height: 20),
                         Padding(
@@ -234,18 +273,22 @@ class _DashboardViewState extends State<DashboardView> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: _activeGoals.length,
+                          itemCount:
+                              _activeGoals.length > 3 ? 3 : _activeGoals.length,
                           itemBuilder: (context, index) {
                             final item = _activeGoals[index];
                             // Find color for category
-                            final color = AppTheme.categoryColors[item.pillarCategory] ?? Colors.white;
+                            final color =
+                                AppTheme.categoryColors[item.pillarCategory] ??
+                                    Colors.white;
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 8),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.05),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: color.withOpacity(0.3)),
+                                border:
+                                    Border.all(color: color.withOpacity(0.3)),
                               ),
                               child: ListTile(
                                 leading: Container(
@@ -274,11 +317,14 @@ class _DashboardViewState extends State<DashboardView> {
                                   value: item.isCompleted,
                                   activeColor: color,
                                   checkColor: Colors.black,
-                                  side: BorderSide(color: color.withOpacity(0.5)),
+                                  side:
+                                      BorderSide(color: color.withOpacity(0.5)),
                                   onChanged: (val) async {
-                                     final updated = item.copyWith(isCompleted: val);
-                                     await ActionItemService.instance.updateActionItem(updated);
-                                     _loadData(); // Refresh list
+                                    final updated =
+                                        item.copyWith(isCompleted: val);
+                                    await ActionItemService.instance
+                                        .updateActionItem(updated);
+                                    _loadData(); // Refresh list
                                   },
                                 ),
                                 onTap: () => _showEditDialog(item),
@@ -286,43 +332,21 @@ class _DashboardViewState extends State<DashboardView> {
                             );
                           },
                         ),
-                      ],
-
-                      const SizedBox(height: 40),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.accentColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 8,
-                              shadowColor: AppTheme.accentColor.withOpacity(0.5),
+                        if (_activeGoals.length > 3) ...[
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: widget.onNavigateToGoals,
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppTheme.accentColor,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
-                            onPressed: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const AssessmentView(),
-                                ),
-                              );
-                              _loadData();
-                            },
                             child: const Text(
-                              "New Assessment",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              "View All Goals",
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
-                        ),
-                      ),
+                        ],
+                      ],
                       const SizedBox(height: 40),
                     ],
                   ),
@@ -378,8 +402,10 @@ class _DashboardViewState extends State<DashboardView> {
                         final date = await showDatePicker(
                           context: context,
                           initialDate: selectedDate ?? DateTime.now(),
-                          firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                          lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                          firstDate: DateTime.now()
+                              .subtract(const Duration(days: 365)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365 * 5)),
                         );
                         if (date != null) {
                           setState(() {
@@ -408,7 +434,8 @@ class _DashboardViewState extends State<DashboardView> {
                       title: titleController.text.trim(),
                       targetDate: selectedDate,
                     );
-                    await ActionItemService.instance.updateActionItem(updatedItem);
+                    await ActionItemService.instance
+                        .updateActionItem(updatedItem);
                     if (mounted) Navigator.pop(context);
                     _loadData();
                   }

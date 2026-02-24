@@ -99,7 +99,8 @@ class _PillarDetailViewState extends State<PillarDetailView> {
                           context: context,
                           initialDate: DateTime.now(),
                           firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365 * 5)),
                         );
                         if (date != null) {
                           setState(() {
@@ -164,6 +165,8 @@ class _PillarDetailViewState extends State<PillarDetailView> {
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF2E335A), Color(0xFF1C1B33)],
@@ -221,12 +224,14 @@ class _PillarDetailViewState extends State<PillarDetailView> {
                             child: Text(
                               "No goals set yet.\nTap + to add one!",
                               textAlign: TextAlign.center,
-                              style: AppTheme.bodyText.copyWith(color: Colors.white30),
+                              style: AppTheme.bodyText
+                                  .copyWith(color: Colors.white30),
                             ),
                           )
                         : ListView.builder(
                             itemCount: _items.length,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             itemBuilder: (context, index) {
                               final item = _items[index];
                               return Dismissible(
@@ -236,7 +241,8 @@ class _PillarDetailViewState extends State<PillarDetailView> {
                                   alignment: Alignment.centerRight,
                                   padding: const EdgeInsets.only(right: 20),
                                   margin: const EdgeInsets.only(bottom: 12),
-                                  child: const Icon(Icons.delete, color: Colors.white),
+                                  child: const Icon(Icons.delete,
+                                      color: Colors.white),
                                 ),
                                 direction: DismissDirection.endToStart,
                                 onDismissed: (_) => _deleteItem(item.id),
@@ -247,20 +253,25 @@ class _PillarDetailViewState extends State<PillarDetailView> {
                                     borderRadius: BorderRadius.circular(12),
                                     border: item.isCompleted
                                         ? Border.all(color: Colors.white10)
-                                        : Border.all(color: widget.color.withOpacity(0.3)),
+                                        : Border.all(
+                                            color:
+                                                widget.color.withOpacity(0.3)),
                                   ),
                                   child: ListTile(
                                     leading: Checkbox(
                                       value: item.isCompleted,
                                       activeColor: widget.color,
                                       checkColor: Colors.black,
-                                      side: BorderSide(color: widget.color.withOpacity(0.5)),
+                                      side: BorderSide(
+                                          color: widget.color.withOpacity(0.5)),
                                       onChanged: (_) => _toggleItem(item),
                                     ),
                                     title: Text(
                                       item.title,
                                       style: TextStyle(
-                                        color: item.isCompleted ? Colors.white38 : Colors.white,
+                                        color: item.isCompleted
+                                            ? Colors.white38
+                                            : Colors.white,
                                         decoration: item.isCompleted
                                             ? TextDecoration.lineThrough
                                             : null,
@@ -272,7 +283,8 @@ class _PillarDetailViewState extends State<PillarDetailView> {
                                             style: TextStyle(
                                               color: item.isCompleted
                                                   ? Colors.white24
-                                                  : widget.color.withOpacity(0.8),
+                                                  : widget.color
+                                                      .withOpacity(0.8),
                                               fontSize: 12,
                                             ),
                                           )
@@ -337,8 +349,10 @@ class _PillarDetailViewState extends State<PillarDetailView> {
                         final date = await showDatePicker(
                           context: context,
                           initialDate: selectedDate ?? DateTime.now(),
-                          firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                          lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                          firstDate: DateTime.now()
+                              .subtract(const Duration(days: 365)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365 * 5)),
                         );
                         if (date != null) {
                           setState(() {

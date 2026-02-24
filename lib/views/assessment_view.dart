@@ -34,12 +34,13 @@ class _AssessmentBodyState extends State<_AssessmentBody> {
     }
 
     // Get current category color or default to accent
-    final categoryColor =
-        AppTheme.categoryColors[controller.currentCategory] ??
+    final categoryColor = AppTheme.categoryColors[controller.currentCategory] ??
         AppTheme.accentColor;
 
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -263,7 +264,7 @@ class _OptionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isYes ? AppTheme.successColor : AppTheme.errorColor;
-    
+
     // YES button styling (Filled)
     if (isYes) {
       return GestureDetector(

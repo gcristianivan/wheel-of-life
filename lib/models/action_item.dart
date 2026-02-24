@@ -26,14 +26,16 @@ class ActionItem {
     };
   }
 
-  factory ActionItem.fromMap(Map<String, dynamic> map) {
+  factory ActionItem.fromMap(Map<dynamic, dynamic> map) {
     return ActionItem(
-      id: map['id'],
-      title: map['title'],
-      pillarCategory: map['pillarCategory'],
-      isCompleted: map['isCompleted'] ?? false,
-      createdAt: DateTime.parse(map['createdAt']),
-      targetDate: map['targetDate'] != null ? DateTime.parse(map['targetDate']) : null,
+      id: map['id'].toString(),
+      title: map['title'].toString(),
+      pillarCategory: map['pillarCategory'].toString(),
+      isCompleted: map['isCompleted'] == true,
+      createdAt: DateTime.parse(map['createdAt'].toString()),
+      targetDate: map['targetDate'] != null
+          ? DateTime.parse(map['targetDate'].toString())
+          : null,
     );
   }
 

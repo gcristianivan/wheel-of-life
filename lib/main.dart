@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'views/app_theme.dart';
-import 'views/dashboard_view.dart';
+import 'views/main_layout.dart';
 import 'views/onboarding_view.dart';
 import 'controllers/auth_controller.dart';
 
@@ -95,7 +95,7 @@ class _WheelOfLifeAppState extends State<WheelOfLifeApp> {
           if (snapshot.data == false) {
             return const OnboardingView();
           }
-          return const DashboardView();
+          return const MainLayout();
         },
       ),
       debugShowCheckedModeBanner: false,

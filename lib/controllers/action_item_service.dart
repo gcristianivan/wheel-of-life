@@ -70,14 +70,40 @@ class ActionItemService {
 
     return items;
   }
-  
+
   Future<void> updateActionItem(ActionItem item) async {
-     final box = await _getBox();
-     await box.put(item.id, item.toMap());
+    final box = await _getBox();
+    await box.put(item.id, item.toMap());
   }
 
   Future<void> deleteActionItem(String id) async {
     final box = await _getBox();
     await box.delete(id);
+  }
+
+  Future<List<ActionItem>> getAllActionItems() async {
+    final box = await _getBox();
+    final List<ActionItem> items = [];
+
+    for (var i = 0; i < box.length; i++) {
+      final value = box.getAt(i);
+      if (value is Map) {
+        final itemMap = Map<String, dynamic>.from(value);
+        items.add(ActionItem.fromMap(itemMap));
+      }
+    }
+    return items;
+  }
+
+  Future<void> clearData() async {
+    final box = await _getBox();
+    await box.clear();
+  }
+
+  Future<void> insertActionItems(List<ActionItem> items) async {
+    final box = await _getBox();
+    for (var item in items) {
+      await box.put(item.id, item.toMap());
+    }
   }
 }

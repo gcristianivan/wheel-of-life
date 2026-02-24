@@ -12,11 +12,28 @@ class WheelEntry {
     return {'id': id, 'date': date.toIso8601String(), 'scores': scores};
   }
 
-  factory WheelEntry.fromMap(Map<String, dynamic> map) {
+  factory WheelEntry.fromMap(Map<dynamic, dynamic> map) {
+    final Map<String, int> parsedScores = {};
+    if (map['scores'] != null) {
+      final rawScores = map['scores'] as Map;
+      for (var entry in rawScores.entries) {
+        parsedScores[entry.key.toString()] = (entry.value as num).toInt();
+      }
+    }
+
+    int? parsedId;
+    if (map['id'] != null) {
+      if (map['id'] is int) {
+        parsedId = map['id'] as int;
+      } else {
+        parsedId = int.tryParse(map['id'].toString());
+      }
+    }
+
     return WheelEntry(
-      id: map['id'],
-      date: DateTime.parse(map['date']),
-      scores: Map<String, int>.from(map['scores']),
+      id: parsedId,
+      date: DateTime.parse(map['date'].toString()),
+      scores: parsedScores,
     );
   }
 }

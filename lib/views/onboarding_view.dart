@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_theme.dart';
-import 'dashboard_view.dart';
+import 'main_layout.dart';
 
 class OnboardingView extends StatefulWidget {
   const OnboardingView({super.key});
@@ -18,22 +18,26 @@ class _OnboardingViewState extends State<OnboardingView> {
     {
       "title": "The Concept",
       "body":
-          "Life is complex. We often get so caught up in the daily grind, chasing deadlines or running errands, that we lose sight of the big picture.\nThe 'Wheel of Life' provides you with a proven coaching tool that invites you to take a 'snapshot' of your existence. Instead of looking at your life as one big, overwhelming mix, we break it down into 8 core pillars. It helps you understand not just how you are doing, but how balanced you truly are.",
+          "Life is more than just a daily grind. We break your world into 8 core pillars, giving you a high-level snapshot of your existence. Stop guessing and start seeing the big picture.",
+      "image": "assets/images/concept.png"
     },
     {
       "title": "The Metaphor",
       "body":
-          "Imagine your life is a wheel. Each spoke represents an area like Health, Career, or Romance.\nIf you score high in Career but low in Health and Fun, your wheel becomes jagged and uneven. If you tried to drive a car with a wheel like that, the ride would be bumpy and uncomfortable. Your goal isn't necessarily to be perfect in every area, but to round out the wheel so your journey becomes smoother.",
+          "Think of your life as a wheel. If your Career is soaring but Health is neglected, your wheel becomes jagged. A bumpy wheel makes for a rough ride: we help you round it out for a smoother journey.",
+      "image": "assets/images/metaphor.png"
     },
     {
       "title": "How LifeWheel Helps",
       "body":
-          "'Wheel of Life' moves you from abstract guessing to visual clarity. Through a series of honest reflections, the app translates your current reality into a tangible shape. You won’t just feel your imbalances; you will see them. This immediate feedback highlights exactly where you are thriving and where you have 'dents', turning a complex life into a clear, actionable roadmap.",
+          "We turn abstract feelings into visual clarity. By mapping your reflections into a tangible shape, you can instantly spot the \"dents\" in your life and turn them into an actionable roadmap.",
+      "image": "assets/images/clarity.png"
     },
     {
       "title": "The Goal",
       "body":
-          "A balanced wheel doesn't mean doing everything at once. It means identifying the neglected areas that are dragging you down. By improving your lowest scores, you often find that other areas of your life improve automatically.",
+          "Balance isn't about being perfect; it’s about alignment. By identifying and lifting your lowest scores, you'll find that the rest of your life often improves automatically.",
+      "image": "assets/images/goal.png"
     },
   ];
 
@@ -50,7 +54,7 @@ class _OnboardingViewState extends State<OnboardingView> {
     if (mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const DashboardView()),
+        MaterialPageRoute(builder: (_) => const MainLayout()),
       );
     }
   }
@@ -59,91 +63,135 @@ class _OnboardingViewState extends State<OnboardingView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _slides.length,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                },
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // You could add an illustration here based on the slide index
-                        const SizedBox(height: 20),
-                        Text(
-                          _slides[index]["title"]!,
-                          style: AppTheme.heading2.copyWith(fontSize: 28),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 32),
-                        Text(
-                          _slides[index]["body"]!,
-                          style: AppTheme.bodyText.copyWith(fontSize: 16, height: 1.5),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                _slides.length,
-                (index) => Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentPage == index ? AppTheme.accentColor : Colors.white24,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-              child: SizedBox(
+      body: Stack(
+        children: [
+          // Background Image
+          Positioned.fill(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              child: Image.asset(
+                _slides[_currentPage]["image"]!,
+                key: ValueKey<int>(_currentPage),
+                fit: BoxFit.cover,
                 width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accentColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () {
-                    if (_currentPage < _slides.length - 1) {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    } else {
-                      _completeOnboarding();
-                    }
-                  },
-                  child: Text(
-                    _currentPage < _slides.length - 1 ? "Next" : "Get Started",
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                height: double.infinity,
+              ),
+            ),
+          ),
+          // Gradient Overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withOpacity(0.1),
+                    Colors.black.withOpacity(0.8),
+                    Colors.black,
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0.0, 0.7, 1.0],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          // Content
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _slides.length,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentPage = index;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              _slides[index]["title"]!,
+                              style: AppTheme.heading2.copyWith(fontSize: 32),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              _slides[index]["body"]!,
+                              style: AppTheme.bodyText.copyWith(
+                                fontSize: 16,
+                                height: 1.5,
+                                color: Colors.white.withOpacity(0.9),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 60),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    _slides.length,
+                    (index) => Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _currentPage == index
+                            ? AppTheme.accentColor
+                            : Colors.white24,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.accentColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        if (_currentPage < _slides.length - 1) {
+                          _pageController.nextPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        } else {
+                          _completeOnboarding();
+                        }
+                      },
+                      child: Text(
+                        _currentPage < _slides.length - 1
+                            ? "Next"
+                            : "Get Started",
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
