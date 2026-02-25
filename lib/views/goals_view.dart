@@ -222,10 +222,13 @@ class _GoalsViewState extends State<GoalsView> {
             ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppTheme.accentColor,
-        child: const Icon(Icons.add, color: Colors.white),
-        onPressed: _showAddGoalDialog,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80.0),
+        child: FloatingActionButton(
+          backgroundColor: AppTheme.accentColor,
+          child: const Icon(Icons.add, color: Colors.white),
+          onPressed: _showAddGoalDialog,
+        ),
       ),
       body: Container(
         width: double.infinity,
@@ -249,7 +252,7 @@ class _GoalsViewState extends State<GoalsView> {
                         child: Padding(
                           padding: const EdgeInsets.only(top: 100.0),
                           child: Text(
-                            "No goals found.\nGo to a Pillar to add one!",
+                            "No goals found.\nTap the + button to add one!",
                             textAlign: TextAlign.center,
                             style: AppTheme.bodyText
                                 .copyWith(color: Colors.white30),

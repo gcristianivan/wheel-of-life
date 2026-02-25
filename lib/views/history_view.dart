@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/wheel_entry.dart';
 import '../controllers/database_service.dart';
 import 'app_theme.dart';
+import 'historical_wheel_view.dart';
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
@@ -463,37 +464,47 @@ class _HistoryViewState extends State<HistoryView> {
               final val = _getEntryValue(entry);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: AppTheme.glassCard(
-                    child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(DateFormat('MMM d, yyyy').format(entry.date),
-                            style: AppTheme.bodyText.copyWith(
-                                color: Colors.white,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => HistoricalWheelView(entry: entry),
+                      ),
+                    );
+                  },
+                  child: AppTheme.glassCard(
+                      child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(DateFormat('MMM d, yyyy').format(entry.date),
+                              style: AppTheme.bodyText.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold)),
+                          Text(DateFormat('h:mm a').format(entry.date),
+                              style: const TextStyle(
+                                  color: Colors.white38, fontSize: 12)),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                            color: _getCategoryColor().withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: _getCategoryColor().withOpacity(0.3))),
+                        child: Text(val.toStringAsFixed(1),
+                            style: TextStyle(
+                                color: _getCategoryColor(),
                                 fontWeight: FontWeight.bold)),
-                        Text(DateFormat('h:mm a').format(entry.date),
-                            style: const TextStyle(
-                                color: Colors.white38, fontSize: 12)),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                          color: _getCategoryColor().withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: _getCategoryColor().withOpacity(0.3))),
-                      child: Text(val.toStringAsFixed(1),
-                          style: TextStyle(
-                              color: _getCategoryColor(),
-                              fontWeight: FontWeight.bold)),
-                    )
-                  ],
-                )),
+                      )
+                    ],
+                  )),
+                ),
               );
             },
           )
