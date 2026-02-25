@@ -222,6 +222,11 @@ class _GoalsViewState extends State<GoalsView> {
             ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppTheme.accentColor,
+        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: _showAddGoalDialog,
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -287,6 +292,133 @@ class _GoalsViewState extends State<GoalsView> {
                   ],
                 ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _showAddGoalDialog() async {
+    final titleController = TextEditingController();
+    DateTime? selectedDate;
+    String? selectedCategory = AppTheme.categoryColors.keys.first;
+
+    await showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF2E335A),
+            title: Text(
+              "New Goal",
+              style: AppTheme.heading2.copyWith(fontSize: 20),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedCategory,
+                    dropdownColor: const Color(0xFF1C1B33),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: "Category",
+                      labelStyle: TextStyle(color: Colors.white54),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white24),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: AppTheme.accentColor),
+                      ),
+                    ),
+                    items: AppTheme.categoryColors.keys.map((String category) {
+                      return DropdownMenuItem<String>(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedCategory = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: titleController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      hintText: "What do you want to achieve?",
+                      hintStyle: TextStyle(color: Colors.white54),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white24),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: AppTheme.accentColor),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Text(
+                        selectedDate == null
+                            ? "No Deadline"
+                            : DateFormat('MMM d, yyyy').format(selectedDate!),
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now()
+                                .subtract(const Duration(days: 365)),
+                            lastDate: DateTime.now()
+                                .add(const Duration(days: 365 * 5)),
+                          );
+                          if (date != null) {
+                            setState(() {
+                              selectedDate = date;
+                            });
+                          }
+                        },
+                        child: const Text("Set Date"),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.accentColor,
+                ),
+                onPressed: () async {
+                  if (titleController.text.trim().isNotEmpty &&
+                      selectedCategory != null) {
+                    final newItem = ActionItem(
+                      id: DateTime.now().millisecondsSinceEpoch.toString(),
+                      pillarCategory: selectedCategory!,
+                      title: titleController.text.trim(),
+                      isCompleted: false,
+                      targetDate: selectedDate,
+                      createdAt: DateTime.now(),
+                    );
+                    await ActionItemService.instance.addActionItem(newItem);
+                    if (mounted) Navigator.pop(context);
+                    _loadItems();
+                  }
+                },
+                child: const Text("Add"),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

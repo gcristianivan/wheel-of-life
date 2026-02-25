@@ -194,8 +194,8 @@ class _DashboardViewState extends State<DashboardView> {
                                             MaterialPageRoute(
                                               builder: (_) => PillarDetailView(
                                                 category: categories[index],
-                                                currentScore: _latestEntry!
-                                                            .scores[
+                                                currentScore: _latestEntry
+                                                            ?.scores[
                                                         categories[index]] ??
                                                     0,
                                                 color: AppTheme.categoryColors[
@@ -219,7 +219,23 @@ class _DashboardViewState extends State<DashboardView> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.touch_app,
+                              size: 16, color: Colors.white54),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Tap a slice to manage goals for that pillar",
+                            style: AppTheme.bodyText.copyWith(
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24.0),
                         child: SizedBox(
