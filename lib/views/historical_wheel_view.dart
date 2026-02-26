@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
@@ -30,15 +31,27 @@ class _HistoricalWheelViewState extends State<HistoricalWheelView> {
               const Duration(milliseconds: 100)); // Small delay for any paint
 
       if (imageBytes != null) {
-        final directory = await getApplicationDocumentsDirectory();
         final dateStr = DateFormat('yyyyMMdd').format(widget.entry.date);
-        final imagePath = '${directory.path}/life_wheel_$dateStr.png';
-        final imageFile = File(imagePath);
-        await imageFile.writeAsBytes(imageBytes);
+        final fileName = 'life_wheel_$dateStr.png';
+
+        XFile xFile;
+        if (kIsWeb) {
+          xFile = XFile.fromData(
+            imageBytes,
+            mimeType: 'image/png',
+            name: fileName,
+          );
+        } else {
+          final directory = await getApplicationDocumentsDirectory();
+          final imagePath = '${directory.path}/$fileName';
+          final imageFile = File(imagePath);
+          await imageFile.writeAsBytes(imageBytes);
+          xFile = XFile(imagePath);
+        }
 
         // Share the file
         await Share.shareXFiles(
-          [XFile(imagePath)],
+          [xFile],
           text:
               'My Life Wheel from ${DateFormat('MMM d, yyyy').format(widget.entry.date)}',
         );
