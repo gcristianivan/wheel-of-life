@@ -78,7 +78,7 @@ class _SettingsViewState extends State<SettingsView> {
                         ),
                       ),
                       value: _biometricsEnabled,
-                      activeColor: AppTheme.accentColor,
+                      activeThumbColor: AppTheme.accentColor,
                       onChanged: (val) async {
                         await _auth.setBiometricEnabled(val);
                         setState(() {
@@ -184,7 +184,7 @@ class _SettingsViewState extends State<SettingsView> {
                     leading:
                         const Icon(Icons.info_outline, color: Colors.white70),
                     title: Text(
-                      "About the Wheel of Life",
+                      "About Life Wheel",
                       style: AppTheme.bodyText.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -222,7 +222,7 @@ class _SettingsViewState extends State<SettingsView> {
                               style: AppTheme.heading2
                                   .copyWith(color: Colors.redAccent)),
                           content: Text(
-                              "Are you sure you want to permanently delete all Wheel of Life history and Action Items? This action cannot be undone.",
+                              "Are you sure you want to permanently delete all Life Wheel history and Action Items? This action cannot be undone.",
                               style: AppTheme.bodyText),
                           actions: [
                             TextButton(

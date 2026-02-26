@@ -5,6 +5,7 @@ import '../models/wheel_entry.dart';
 import '../controllers/database_service.dart';
 import 'app_theme.dart';
 import 'historical_wheel_view.dart';
+import 'comparison_selection_view.dart';
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
@@ -445,14 +446,38 @@ class _HistoryViewState extends State<HistoryView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "HISTORY",
-            style: const TextStyle(
-              color: Colors.white54,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "HISTORY",
+                style: const TextStyle(
+                  color: Colors.white54,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              if (_entries.length >= 2)
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ComparisonSelectionView(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.compare_arrows,
+                      size: 16, color: AppTheme.accentColor),
+                  label: const Text(
+                    "Compare",
+                    style: TextStyle(
+                        color: AppTheme.accentColor,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 16),
           ListView.builder(
@@ -464,46 +489,102 @@ class _HistoryViewState extends State<HistoryView> {
               final val = _getEntryValue(entry);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => HistoricalWheelView(entry: entry),
+                child: Dismissible(
+                  key: ValueKey(entry.id.toString()),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 24.0),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                  confirmDismiss: (direction) async {
+                    return await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: const Color(0xFF2E335A),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        title: const Text("Delete Snapshot",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
+                        content: const Text(
+                            "Are you sure you want to delete this historical wheel snapshot? This cannot be undone.",
+                            style: TextStyle(color: Colors.white70)),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text("Cancel",
+                                style: TextStyle(color: Colors.white54)),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Colors.redAccent.withOpacity(0.8),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text("Delete",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                        ],
                       ),
                     );
                   },
-                  child: AppTheme.glassCard(
-                      child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(DateFormat('MMM d, yyyy').format(entry.date),
-                              style: AppTheme.bodyText.copyWith(
-                                  color: Colors.white,
+                  onDismissed: (direction) async {
+                    if (entry.id != null) {
+                      await DatabaseService.instance.deleteEntry(entry.id!);
+                      _loadEntries();
+                    }
+                  },
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => HistoricalWheelView(entry: entry),
+                        ),
+                      );
+                    },
+                    child: AppTheme.glassCard(
+                        child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(DateFormat('MMM d, yyyy').format(entry.date),
+                                style: AppTheme.bodyText.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
+                            Text(DateFormat('h:mm a').format(entry.date),
+                                style: const TextStyle(
+                                    color: Colors.white38, fontSize: 12)),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                              color: _getCategoryColor().withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: _getCategoryColor().withOpacity(0.3))),
+                          child: Text(val.toStringAsFixed(1),
+                              style: TextStyle(
+                                  color: _getCategoryColor(),
                                   fontWeight: FontWeight.bold)),
-                          Text(DateFormat('h:mm a').format(entry.date),
-                              style: const TextStyle(
-                                  color: Colors.white38, fontSize: 12)),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                            color: _getCategoryColor().withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                                color: _getCategoryColor().withOpacity(0.3))),
-                        child: Text(val.toStringAsFixed(1),
-                            style: TextStyle(
-                                color: _getCategoryColor(),
-                                fontWeight: FontWeight.bold)),
-                      )
-                    ],
-                  )),
+                        ),
+                      ],
+                    )),
+                  ),
                 ),
               );
             },

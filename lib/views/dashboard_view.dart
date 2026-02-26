@@ -115,7 +115,7 @@ class _DashboardViewState extends State<DashboardView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Wheel of Life', style: AppTheme.heading2),
+        title: Text('Life Wheel', style: AppTheme.heading2),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),

@@ -226,8 +226,8 @@ class _GoalsViewState extends State<GoalsView> {
         padding: const EdgeInsets.only(bottom: 80.0),
         child: FloatingActionButton(
           backgroundColor: AppTheme.accentColor,
-          child: const Icon(Icons.add, color: Colors.white),
           onPressed: _showAddGoalDialog,
+          child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
       body: Container(
@@ -319,7 +319,7 @@ class _GoalsViewState extends State<GoalsView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<String>(
-                    value: selectedCategory,
+                    initialValue: selectedCategory,
                     dropdownColor: const Color(0xFF1C1B33),
                     style: const TextStyle(color: Colors.white),
                     decoration: const InputDecoration(

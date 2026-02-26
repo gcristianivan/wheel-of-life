@@ -84,7 +84,7 @@ class _WheelOfLifeAppState extends State<WheelOfLifeApp> {
     }
 
     return MaterialApp(
-      title: 'Wheel of Life',
+      title: 'Life Wheel',
       theme: AppTheme.themeData,
       home: FutureBuilder<bool>(
         future: _checkOnboarding(),

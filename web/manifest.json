@@ -1,6 +1,6 @@
 {
-    "name": "wheel_of_life",
-    "short_name": "wheel_of_life",
+    "name": "Life Wheel",
+    "short_name": "Life Wheel",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -57,4 +57,9 @@ class DatabaseService {
       await box.add(entry.toMap());
     }
   }
+
+  Future<void> deleteEntry(int key) async {
+    final box = await _getBox();
+    await box.delete(key);
+  }
 }

@@ -28,7 +28,7 @@ class AuthController {
 
     try {
       final didAuthenticate = await auth.authenticate(
-        localizedReason: 'Scan to access your Wheel of Life',
+        localizedReason: 'Scan to access Life Wheel',
       );
       return didAuthenticate;
     } catch (e) {
