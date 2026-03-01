@@ -16,23 +16,19 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
 
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      DashboardView(
-        onNavigateToGoals: () {
-          setState(() {
-            _currentIndex = 2; // Switch to GoalsView
-          });
-        },
-      ),
-      const HistoryView(),
-      const GoalsView(),
-    ];
-  }
+  List<Widget> get _pages => [
+        DashboardView(
+          key: UniqueKey(), // Force rebuild
+          onNavigateToGoals: () {
+            setState(() {
+              _currentIndex = 2; // Switch to GoalsView
+            });
+          },
+        ),
+        HistoryView(
+            key: UniqueKey()), // Force rebuild on tab switch to reload data
+        GoalsView(key: UniqueKey()),
+      ];
 
   @override
   Widget build(BuildContext context) {

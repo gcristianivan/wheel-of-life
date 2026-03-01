@@ -15,6 +15,17 @@ class AuthController {
     await prefs.setBool('biometric_enabled', value);
   }
 
+  // MOCK PREMIUM STATUS
+  Future<bool> get isPremium async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('is_premium') ?? false;
+  }
+
+  Future<void> setPremium(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_premium', value);
+  }
+
   Future<bool> authenticate() async {
     if (kIsWeb) return true; // Web generic bypass
     final isSupported = await auth.isDeviceSupported();

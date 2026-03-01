@@ -5,6 +5,8 @@ import '../controllers/database_service.dart';
 import '../controllers/action_item_service.dart';
 import 'app_theme.dart';
 import 'onboarding_view.dart';
+import 'paywall_view.dart';
+import 'premium_account_view.dart';
 
 class SettingsView extends StatefulWidget {
   const SettingsView({super.key});
@@ -17,6 +19,7 @@ class _SettingsViewState extends State<SettingsView> {
   final AuthController _auth = AuthController();
   final DataTransferService _dataService = DataTransferService();
   bool _biometricsEnabled = false;
+  bool _isPremium = false;
 
   @override
   void initState() {
@@ -26,8 +29,10 @@ class _SettingsViewState extends State<SettingsView> {
 
   Future<void> _loadSettings() async {
     final enabled = await _auth.isBiometricEnabled;
+    final premium = await _auth.isPremium;
     setState(() {
       _biometricsEnabled = enabled;
+      _isPremium = premium;
     });
   }
 
@@ -84,6 +89,51 @@ class _SettingsViewState extends State<SettingsView> {
                         setState(() {
                           _biometricsEnabled = val;
                         });
+                      },
+                    ),
+                    const Divider(color: Colors.white24),
+                  ],
+                  if (!_isPremium) ...[
+                    ListTile(
+                      leading: const Icon(Icons.star, color: Colors.amber),
+                      title: Text(
+                        "Go Premium",
+                        style: AppTheme.bodyText.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amber,
+                        ),
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios,
+                          size: 16, color: Colors.white54),
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const PaywallView()),
+                        );
+                        _loadSettings();
+                      },
+                    ),
+                    const Divider(color: Colors.white24),
+                  ] else ...[
+                    ListTile(
+                      leading: const Icon(Icons.workspace_premium,
+                          color: AppTheme.accentColor),
+                      title: Text(
+                        "Premium Account",
+                        style: AppTheme.bodyText.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.accentColor,
+                        ),
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios,
+                          size: 16, color: Colors.white54),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const PremiumAccountView()),
+                        );
                       },
                     ),
                     const Divider(color: Colors.white24),
@@ -214,6 +264,16 @@ class _SettingsViewState extends State<SettingsView> {
                     trailing: const Icon(Icons.arrow_forward_ios,
                         size: 16, color: Colors.white54),
                     onTap: () async {
+                      if (!_isPremium && context.mounted) {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const PaywallView()),
+                        );
+                        _loadSettings();
+                        return;
+                      }
+
                       bool? confirm = await showDialog<bool>(
                         context: context,
                         builder: (ctx) => AlertDialog(

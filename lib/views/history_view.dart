@@ -6,6 +6,8 @@ import '../controllers/database_service.dart';
 import 'app_theme.dart';
 import 'historical_wheel_view.dart';
 import 'comparison_selection_view.dart';
+import 'paywall_view.dart';
+import '../controllers/auth_controller.dart';
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
@@ -19,6 +21,7 @@ class _HistoryViewState extends State<HistoryView> {
   bool _isLoading = true;
   String _selectedCategory = 'Average';
   String _selectedTimeRange = 'All'; // 'Month', 'Quarter', 'Year', 'All'
+  final AuthController _auth = AuthController();
 
   final List<String> _timeRangeOptions = ['Month', 'Quarter', 'Year', 'All'];
 
@@ -460,13 +463,21 @@ class _HistoryViewState extends State<HistoryView> {
               ),
               if (_entries.length >= 2)
                 TextButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ComparisonSelectionView(),
-                      ),
-                    );
+                  onPressed: () async {
+                    final isPremium = await _auth.isPremium;
+                    if (!isPremium && context.mounted) {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const PaywallView()),
+                      );
+                    } else if (context.mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ComparisonSelectionView(),
+                        ),
+                      );
+                    }
                   },
                   icon: const Icon(Icons.compare_arrows,
                       size: 16, color: AppTheme.accentColor),
@@ -502,6 +513,17 @@ class _HistoryViewState extends State<HistoryView> {
                     child: const Icon(Icons.delete, color: Colors.white),
                   ),
                   confirmDismiss: (direction) async {
+                    final isPremium = await _auth.isPremium;
+                    if (!isPremium && context.mounted) {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const PaywallView()),
+                      );
+                      return false; // Prevent dismissal
+                    }
+
+                    if (!context.mounted) return false;
+
                     return await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(

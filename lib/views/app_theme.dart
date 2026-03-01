@@ -8,6 +8,7 @@ class AppTheme {
   static const Color accentColor = Color(0xFF6C63FF);
   static const Color successColor = Color(0xFF66BB6A);
   static const Color errorColor = Color(0xFFEF5350);
+  static const Color surfaceColor = Color(0xFF2E335A);
 
   static const Map<String, Color> categoryColors = {
     'Health': Color(0xFF69F0AE), // Green

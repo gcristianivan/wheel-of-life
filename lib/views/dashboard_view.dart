@@ -10,6 +10,8 @@ import 'assessment_view.dart';
 import 'settings_view.dart';
 import 'app_theme.dart';
 import 'pillar_detail_view.dart';
+import 'paywall_view.dart';
+import '../controllers/auth_controller.dart';
 
 class DashboardView extends StatefulWidget {
   final VoidCallback? onNavigateToGoals;
@@ -21,9 +23,12 @@ class DashboardView extends StatefulWidget {
 }
 
 class _DashboardViewState extends State<DashboardView> {
+  final DatabaseService _db = DatabaseService.instance;
+  final ActionItemService _actionService = ActionItemService.instance;
+  final AuthController _auth = AuthController();
   WheelEntry? _latestEntry;
   List<ActionItem> _activeGoals = [];
-  bool _isLoading = true;
+  List<WheelEntry> _allEntries = [];
 
   @override
   void initState() {
@@ -32,25 +37,24 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    await Future.wait([
-      _loadLatestEntry(),
-      _loadActiveGoals(),
-    ]);
-    setState(() => _isLoading = false);
+    final entries = await _db.getEntries();
+    setState(() {
+      _allEntries = entries;
+    });
+    _loadLatestEntry();
+    _loadActiveGoals();
   }
 
   Future<void> _loadLatestEntry() async {
-    final entries = await DatabaseService.instance.getEntries();
-    if (entries.isNotEmpty) {
-      _latestEntry = entries.first;
+    if (_allEntries.isNotEmpty) {
+      _latestEntry = _allEntries.first;
     } else {
       _latestEntry = null;
     }
   }
 
   Future<void> _loadActiveGoals() async {
-    _activeGoals = await ActionItemService.instance.getAllActiveActionItems();
+    _activeGoals = await _actionService.getAllActiveActionItems();
   }
 
   @override
@@ -118,13 +122,13 @@ class _DashboardViewState extends State<DashboardView> {
         title: Text('Life Wheel', style: AppTheme.heading2),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.settings, color: Colors.white70),
             onPressed: () async {
               await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const SettingsView()),
               );
-              if (mounted) _loadData();
+              _loadData();
             },
           ),
         ],
@@ -140,233 +144,246 @@ class _DashboardViewState extends State<DashboardView> {
           ),
         ),
         child: SafeArea(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                  child: Column(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 400, // Fixed height for the chart area
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        height: 400, // Fixed height for the chart area
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Concentric Guide Circles (Benchmarks)
-                            for (final level in [3, 5, 8, 10])
-                              Container(
-                                width: (20.0 + (level * 12)) * 2,
-                                height: (20.0 + (level * 12)) * 2,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.1),
-                                    width: 1,
-                                  ),
-                                ),
-                              ),
-
-                            PieChart(
-                              PieChartData(
-                                sections: sections,
-                                centerSpaceRadius: 0,
-                                sectionsSpace: 2,
-                                startDegreeOffset: 270,
-                                pieTouchData: PieTouchData(
-                                  touchCallback: (
-                                    FlTouchEvent event,
-                                    pieTouchResponse,
-                                  ) {
-                                    setState(() {
-                                      if (!event.isInterestedForInteractions ||
-                                          pieTouchResponse == null ||
-                                          pieTouchResponse.touchedSection ==
-                                              null) {
-                                        return;
-                                      }
-                                      if (event is FlTapUpEvent) {
-                                        final index = pieTouchResponse
-                                            .touchedSection!
-                                            .touchedSectionIndex;
-                                        if (index >= 0 &&
-                                            index < categories.length) {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => PillarDetailView(
-                                                category: categories[index],
-                                                currentScore: _latestEntry
-                                                            ?.scores[
-                                                        categories[index]] ??
-                                                    0,
-                                                color: AppTheme.categoryColors[
-                                                        categories[index]] ??
-                                                    Colors.white,
-                                              ),
-                                            ),
-                                          ).then((_) =>
-                                              _loadData()); // Refresh on return
-                                        }
-                                      }
-                                    });
-                                  },
-                                ),
-                              ),
-                              swapAnimationDuration: const Duration(
-                                milliseconds: 800,
-                              ),
-                              swapAnimationCurve: Curves.elasticOut,
+                      // Concentric Guide Circles (Benchmarks)
+                      for (final level in [3, 5, 8, 10])
+                        Container(
+                          width: (20.0 + (level * 12)) * 2,
+                          height: (20.0 + (level * 12)) * 2,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.1),
+                              width: 1,
                             ),
-                          ],
+                          ),
+                        ),
+
+                      PieChart(
+                        PieChartData(
+                          sections: sections,
+                          centerSpaceRadius: 0,
+                          sectionsSpace: 2,
+                          startDegreeOffset: 270,
+                          pieTouchData: PieTouchData(
+                            touchCallback: (
+                              FlTouchEvent event,
+                              pieTouchResponse,
+                            ) async {
+                              if (!event.isInterestedForInteractions ||
+                                  pieTouchResponse == null ||
+                                  pieTouchResponse.touchedSection == null) {
+                                return;
+                              }
+                              if (event is FlTapUpEvent) {
+                                final index = pieTouchResponse
+                                    .touchedSection!.touchedSectionIndex;
+                                if (index >= 0 && index < categories.length) {
+                                  final isPremium = await _auth.isPremium;
+                                  if (!isPremium && mounted) {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) => const PaywallView()),
+                                    );
+                                  } else if (mounted) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => PillarDetailView(
+                                          category: categories[index],
+                                          currentScore: _latestEntry
+                                                  ?.scores[categories[index]] ??
+                                              0,
+                                          color: AppTheme.categoryColors[
+                                                  categories[index]] ??
+                                              Colors.white,
+                                        ),
+                                      ),
+                                    ).then((_) => _loadData());
+                                  }
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                        swapAnimationDuration: const Duration(
+                          milliseconds: 800,
+                        ),
+                        swapAnimationCurve: Curves.elasticOut,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.touch_app,
+                        size: 16, color: Colors.white54),
+                    const SizedBox(width: 8),
+                    Text(
+                      "Tap a slice to manage goals for that pillar",
+                      style: AppTheme.bodyText.copyWith(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.accentColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 8,
+                        shadowColor: AppTheme.accentColor.withOpacity(0.5),
+                      ),
+                      onPressed: () async {
+                        final isPremium = await _auth.isPremium;
+                        if (_allEntries.isNotEmpty && !isPremium) {
+                          // Reached free limit, show paywall
+                          if (context.mounted) {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const PaywallView()),
+                            );
+                            _loadData();
+                          }
+                        } else {
+                          if (context.mounted) {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const AssessmentView(),
+                              ),
+                            );
+                            if (result == true) {
+                              _loadData();
+                            }
+                          }
+                        }
+                      },
+                      child: const Text(
+                        "New Assessment",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.touch_app,
-                              size: 16, color: Colors.white54),
-                          const SizedBox(width: 8),
-                          Text(
-                            "Tap a slice to manage goals for that pillar",
-                            style: AppTheme.bodyText.copyWith(
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (_activeGoals.isNotEmpty) ...[
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Active Goals",
+                        style: AppTheme.heading2.copyWith(fontSize: 20),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount:
+                        _activeGoals.length > 3 ? 3 : _activeGoals.length,
+                    itemBuilder: (context, index) {
+                      final item = _activeGoals[index];
+                      // Find color for category
+                      final color =
+                          AppTheme.categoryColors[item.pillarCategory] ??
+                              Colors.white;
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: color.withOpacity(0.3)),
+                        ),
+                        child: ListTile(
+                          leading: Container(
+                            width: 4,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: color,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          title: Text(
+                            item.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Text(
+                            "${item.pillarCategory} • ${item.targetDate != null ? DateFormat('MMM d').format(item.targetDate!) : 'No deadline'}",
+                            style: TextStyle(
                               color: Colors.white54,
                               fontSize: 12,
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.accentColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 8,
-                              shadowColor:
-                                  AppTheme.accentColor.withOpacity(0.5),
-                            ),
-                            onPressed: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const AssessmentView(),
-                                ),
-                              );
-                              _loadData();
+                          trailing: Checkbox(
+                            value: item.isCompleted,
+                            activeColor: color,
+                            checkColor: Colors.black,
+                            side: BorderSide(color: color.withOpacity(0.5)),
+                            onChanged: (val) async {
+                              final updated = item.copyWith(isCompleted: val);
+                              await ActionItemService.instance
+                                  .updateActionItem(updated);
+                              _loadData(); // Refresh list
                             },
-                            child: const Text(
-                              "New Assessment",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
                           ),
+                          onTap: () => _showEditDialog(item),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      if (_activeGoals.isNotEmpty) ...[
-                        const SizedBox(height: 20),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "Active Goals",
-                              style: AppTheme.heading2.copyWith(fontSize: 20),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount:
-                              _activeGoals.length > 3 ? 3 : _activeGoals.length,
-                          itemBuilder: (context, index) {
-                            final item = _activeGoals[index];
-                            // Find color for category
-                            final color =
-                                AppTheme.categoryColors[item.pillarCategory] ??
-                                    Colors.white;
-
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.05),
-                                borderRadius: BorderRadius.circular(12),
-                                border:
-                                    Border.all(color: color.withOpacity(0.3)),
-                              ),
-                              child: ListTile(
-                                leading: Container(
-                                  width: 4,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: color,
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                ),
-                                title: Text(
-                                  item.title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  "${item.pillarCategory} • ${item.targetDate != null ? DateFormat('MMM d').format(item.targetDate!) : 'No deadline'}",
-                                  style: TextStyle(
-                                    color: Colors.white54,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                trailing: Checkbox(
-                                  value: item.isCompleted,
-                                  activeColor: color,
-                                  checkColor: Colors.black,
-                                  side:
-                                      BorderSide(color: color.withOpacity(0.5)),
-                                  onChanged: (val) async {
-                                    final updated =
-                                        item.copyWith(isCompleted: val);
-                                    await ActionItemService.instance
-                                        .updateActionItem(updated);
-                                    _loadData(); // Refresh list
-                                  },
-                                ),
-                                onTap: () => _showEditDialog(item),
-                              ),
-                            );
-                          },
-                        ),
-                        if (_activeGoals.length > 3) ...[
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: widget.onNavigateToGoals,
-                            style: TextButton.styleFrom(
-                              foregroundColor: AppTheme.accentColor,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                            child: const Text(
-                              "View All Goals",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ],
-                      const SizedBox(height: 40),
-                    ],
+                      );
+                    },
                   ),
-                ),
+                  if (_activeGoals.length > 3) ...[
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: widget.onNavigateToGoals,
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.accentColor,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text(
+                        "View All Goals",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ],
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
         ),
       ),
     );

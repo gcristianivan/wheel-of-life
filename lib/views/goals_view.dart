@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/action_item.dart';
 import '../controllers/action_item_service.dart';
+import '../controllers/auth_controller.dart';
 import 'app_theme.dart';
+import 'paywall_view.dart';
 
 class GoalsView extends StatefulWidget {
   const GoalsView({super.key});
@@ -13,6 +15,7 @@ class GoalsView extends StatefulWidget {
 
 class _GoalsViewState extends State<GoalsView> {
   final ActionItemService _service = ActionItemService.instance;
+  final AuthController _auth = AuthController();
   List<ActionItem> _activeItems = [];
   List<ActionItem> _completedItems = [];
   bool _isLoading = true;
@@ -300,6 +303,15 @@ class _GoalsViewState extends State<GoalsView> {
   }
 
   Future<void> _showAddGoalDialog() async {
+    final isPremium = await _auth.isPremium;
+    if (!isPremium && mounted) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const PaywallView()),
+      );
+      return;
+    }
+
     final titleController = TextEditingController();
     DateTime? selectedDate;
     String? selectedCategory = AppTheme.categoryColors.keys.first;
